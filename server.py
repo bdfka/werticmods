@@ -1,41 +1,26 @@
 """
-WerticMods — API-сервер.
-Только JSON. UI живёт на GitHub Pages (docs/index.html).
+WerticMods — API-сервер с токен-авторизацией.
 """
-import os, json, sqlite3
+import os, json, sqlite3, secrets
 import requests
 from functools import wraps
-from flask import Flask, request, jsonify, session, make_response
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 
 DB = "werticmods.db"
-MODRINTH = "https://api.modrinth.com/v2"
-UA = {"User-Agent": "WerticMods/1.0 (github.com/yourname/werticmods)"}
-
-# Разрешённые origins для CORS
-ALLOWED = [
-    "http://127.0.0.1:5000",
-    "http://localhost:5000",
-    "null",  # file://
-]
-# Динамически добавим github.io домены — см. CORS(app, ...)
+MODRINTH_V2 = "https://api.modrinth.com/v2"
+MODRINTH_V3 = "https://api.modrinth.com/v3"
+UA = {"User-Agent": "WerticMods/2.0 (github.com/yourname/werticmods)"}
 
 app = Flask(__name__)
-app.secret_key = "werticmods_secret_change_me"
-app.config.update(
-    SESSION_COOKIE_SAMESITE="None",   # чтобы работало с github.io → localhost
-    SESSION_COOKIE_SECURE=False,      # localhost без https
-)
+app.secret_key = "werticmods_secret_change_me_v2"
 
-# CORS: разрешаем github.io и localhost
-CORS(app,
-     supports_credentials=True,
-     origins=[
-         r"https://.*\.github\.io",
-         r"http://127\.0\.0\.1(:\d+)?",
-         r"http://localhost(:\d+)?",
-     ])
+CORS(app, origins=[
+    r"https://.*\.github\.io",
+    r"http://127\.0\.0\.1(:\d+)?",
+    r"http://localhost(:\d+)?",
+], supports_credentials=True, allow_headers=["Content-Type", "Authorization"])
 
 # ---------------- DB ----------------
 def db():
@@ -50,8 +35,11 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nick TEXT UNIQUE NOT NULL,
         pass TEXT NOT NULL,
+        avatar TEXT DEFAULT '',
+        bio TEXT DEFAULT '',
         is_admin INTEGER DEFAULT 0,
         verified INTEGER DEFAULT 0,
+        token TEXT UNIQUE,
         created TEXT DEFAULT CURRENT_TIMESTAMP
     );
     CREATE TABLE IF NOT EXISTS resources(
@@ -76,8 +64,10 @@ def init_db():
     );
     """)
     if not c.execute("SELECT 1 FROM users WHERE nick='bdfka'").fetchone():
-        c.execute("INSERT INTO users(nick,pass,is_admin,verified) VALUES(?,?,1,1)",
-                  ("bdfka", generate_password_hash("bdfka")))
+        c.execute("""INSERT INTO users(nick,pass,is_admin,verified,token,bio)
+                     VALUES(?,?,1,1,?,?)""",
+                  ("bdfka", generate_password_hash("bdfka"),
+                   secrets.token_urlsafe(24), "Главный администратор WerticMods"))
     c.commit()
     c.close()
 
@@ -85,11 +75,11 @@ init_db()
 
 # ---------------- helpers ----------------
 def current_user():
-    uid = session.get("uid")
-    if not uid:
+    token = request.headers.get("Authorization", "").replace("Bearer ", "").strip()
+    if not token:
         return None
     c = db()
-    u = c.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone()
+    u = c.execute("SELECT * FROM users WHERE token=?", (token,)).fetchone()
     c.close()
     return dict(u) if u else None
 
@@ -110,6 +100,10 @@ def admin_required(f):
         return f(*a, **k)
     return w
 
+def public_user(u):
+    if not u: return None
+    return {k: u[k] for k in ("id","nick","avatar","bio","is_admin","verified","created")}
+
 # ---------------- AUTH ----------------
 @app.post("/api/register")
 def register():
@@ -118,51 +112,88 @@ def register():
     pw = d.get("pass") or ""
     if len(nick) < 3 or len(pw) < 3:
         return jsonify(error="Ник и пароль минимум 3 символа"), 400
+    token = secrets.token_urlsafe(24)
     c = db()
     try:
-        c.execute("INSERT INTO users(nick,pass) VALUES(?,?)",
-                  (nick, generate_password_hash(pw)))
+        c.execute("INSERT INTO users(nick,pass,token) VALUES(?,?,?)",
+                  (nick, generate_password_hash(pw), token))
         c.commit()
     except sqlite3.IntegrityError:
         c.close()
         return jsonify(error="Ник занят"), 400
-    uid = c.execute("SELECT id FROM users WHERE nick=?", (nick,)).fetchone()["id"]
+    u = c.execute("SELECT * FROM users WHERE nick=?", (nick,)).fetchone()
     c.close()
-    session["uid"] = uid
-    return jsonify(ok=True, user=current_user())
+    return jsonify(ok=True, token=token, user=public_user(dict(u)))
 
 @app.post("/api/login")
 def login():
     d = request.json or {}
     c = db()
     u = c.execute("SELECT * FROM users WHERE nick=?", (d.get("nick"),)).fetchone()
-    c.close()
     if not u or not check_password_hash(u["pass"], d.get("pass") or ""):
+        c.close()
         return jsonify(error="Неверный ник или пароль"), 400
-    session["uid"] = u["id"]
-    return jsonify(ok=True, user=current_user())
+    # Обновляем токен при каждом входе
+    token = secrets.token_urlsafe(24)
+    c.execute("UPDATE users SET token=? WHERE id=?", (token, u["id"]))
+    c.commit()
+    u = c.execute("SELECT * FROM users WHERE id=?", (u["id"],)).fetchone()
+    c.close()
+    return jsonify(ok=True, token=token, user=public_user(dict(u)))
 
 @app.post("/api/logout")
 def logout():
-    session.clear()
+    u = current_user()
+    if u:
+        c = db()
+        c.execute("UPDATE users SET token=NULL WHERE id=?", (u["id"],))
+        c.commit()
+        c.close()
     return jsonify(ok=True)
 
 @app.get("/api/me")
 def me():
-    return jsonify(user=current_user())
+    return jsonify(user=public_user(current_user()))
+
+@app.put("/api/me")
+@login_required
+def update_me():
+    u = current_user()
+    d = request.json or {}
+    c = db()
+    c.execute("UPDATE users SET avatar=?, bio=? WHERE id=?",
+              (d.get("avatar", u["avatar"]), d.get("bio", u["bio"]), u["id"]))
+    c.commit()
+    u2 = c.execute("SELECT * FROM users WHERE id=?", (u["id"],)).fetchone()
+    c.close()
+    return jsonify(ok=True, user=public_user(dict(u2)))
+
+@app.get("/api/users/<nick>")
+def get_user(nick):
+    c = db()
+    u = c.execute("SELECT * FROM users WHERE nick=?", (nick,)).fetchone()
+    if not u:
+        c.close()
+        return jsonify(error="Не найден"), 404
+    resources = [dict(x) for x in c.execute(
+        """SELECT r.*, us.nick, us.verified FROM resources r
+           JOIN users us ON us.id=r.author_id
+           WHERE r.author_id=? ORDER BY r.id DESC""", (u["id"],)).fetchall()]
+    c.close()
+    return jsonify(user=public_user(dict(u)), resources=resources)
 
 @app.get("/api/health")
 def health():
-    """Проверка связи фронта с сервером."""
-    return jsonify(ok=True, version="1.0")
+    return jsonify(ok=True, version="2.0")
 
 # ---------------- RESOURCES ----------------
 @app.get("/api/resources")
 def list_resources():
     q = request.args.get("q", "").strip()
     t = request.args.get("type", "").strip()
+    author = request.args.get("author", "").strip()
     c = db()
-    sql = """SELECT r.*, u.nick, u.verified FROM resources r
+    sql = """SELECT r.*, u.nick, u.verified, u.avatar FROM resources r
              JOIN users u ON u.id=r.author_id WHERE 1=1"""
     args = []
     if q:
@@ -171,6 +202,9 @@ def list_resources():
     if t:
         sql += " AND r.type=?"
         args.append(t)
+    if author:
+        sql += " AND u.nick=?"
+        args.append(author)
     sql += " ORDER BY r.id DESC"
     rows = [dict(x) for x in c.execute(sql, args).fetchall()]
     c.close()
@@ -179,24 +213,21 @@ def list_resources():
 @app.get("/api/resources/<int:rid>")
 def get_resource(rid):
     c = db()
-    r = c.execute("""SELECT r.*, u.nick AS author_nick, u.verified AS author_verified
+    r = c.execute("""SELECT r.*, u.nick AS author_nick, u.verified AS author_verified,
+                            u.avatar AS author_avatar
                      FROM resources r JOIN users u ON u.id=r.author_id
                      WHERE r.id=?""", (rid,)).fetchone()
     if not r:
         c.close()
         return jsonify(error="Не найдено"), 404
     r = dict(r)
-    try:
-        r["coauthors_list"] = json.loads(r.get("coauthors") or "[]")
-    except Exception:
-        r["coauthors_list"] = []
-    try:
-        r["gallery_list"] = json.loads(r.get("gallery") or "[]")
-    except Exception:
-        r["gallery_list"] = []
+    try: r["coauthors_list"] = json.loads(r.get("coauthors") or "[]")
+    except Exception: r["coauthors_list"] = []
+    try: r["gallery_list"] = json.loads(r.get("gallery") or "[]")
+    except Exception: r["gallery_list"] = []
     coauth = []
     for nick in r["coauthors_list"]:
-        u = c.execute("SELECT id,nick,verified FROM users WHERE nick=?", (nick,)).fetchone()
+        u = c.execute("SELECT id,nick,verified,avatar FROM users WHERE nick=?", (nick,)).fetchone()
         coauth.append(dict(u) if u else {"nick": nick, "id": None, "verified": 0})
     r["coauthors_details"] = coauth
     c.close()
@@ -266,15 +297,29 @@ def delete_resource(rid):
     return jsonify(ok=True)
 
 # ---------------- MODRINTH ----------------
+MR_TYPE_MAP = {
+    "mod": "mod", "modpack": "modpack", "plugin": "plugin",
+    "resourcepack": "resourcepack", "datapack": "datapack",
+    "shader": "shader", "map": "modpack",
+}
+
 @app.get("/api/modrinth/search")
 def mr_search():
     q = request.args.get("q", "").strip()
     t = request.args.get("type", "mod")
-    facets = json.dumps([[f"project_type:{t}"]])
+    version = request.args.get("version", "").strip()
+    loader = request.args.get("loader", "").strip()
+    project_type = MR_TYPE_MAP.get(t, "mod")
+
+    facets = [[f"project_type:{project_type}"]]
+    if version:
+        facets.append([f"versions:{version}"])
+    if loader:
+        facets.append([f"categories:{loader}"])
+
+    params = {"query": q or "", "facets": json.dumps(facets), "limit": 20}
     try:
-        r = requests.get(f"{MODRINTH}/search",
-                         params={"query": q, "facets": facets, "limit": 20},
-                         headers=UA, timeout=20)
+        r = requests.get(f"{MODRINTH_V2}/search", params=params, headers=UA, timeout=20)
         r.raise_for_status()
         return jsonify(r.json())
     except Exception as e:
@@ -283,7 +328,7 @@ def mr_search():
 @app.get("/api/modrinth/versions/<pid>")
 def mr_versions(pid):
     try:
-        r = requests.get(f"{MODRINTH}/project/{pid}/version", headers=UA, timeout=20)
+        r = requests.get(f"{MODRINTH_V2}/project/{pid}/version", headers=UA, timeout=20)
         r.raise_for_status()
         return jsonify(r.json())
     except Exception as e:
@@ -296,10 +341,21 @@ def mr_install():
     url = d.get("url")
     filename = d.get("filename")
     version = (d.get("version") or "").strip()
+    rtype = (d.get("type") or "mod").strip()
     if not url or not filename:
         return jsonify(error="url и filename обязательны"), 400
     base = os.path.join(os.path.expanduser("~"), ".minecraft")
-    target = os.path.join(base, "versions", version, "mods") if version else os.path.join(base, "mods")
+
+    subfolder = {
+        "mod": "mods", "plugin": "plugins",
+        "resourcepack": "resourcepacks",
+        "datapack": "datapacks", "shader": "shaderpacks",
+    }.get(rtype, "mods")
+
+    if version:
+        target = os.path.join(base, "versions", version, subfolder)
+    else:
+        target = os.path.join(base, subfolder)
     os.makedirs(target, exist_ok=True)
     try:
         r = requests.get(url, headers=UA, stream=True, timeout=120)
@@ -318,7 +374,7 @@ def mr_install():
 def admin_users():
     c = db()
     rows = [dict(x) for x in c.execute(
-        "SELECT id,nick,is_admin,verified,created FROM users ORDER BY id").fetchall()]
+        "SELECT id,nick,avatar,is_admin,verified,created FROM users ORDER BY id").fetchall()]
     c.close()
     return jsonify(users=rows)
 
