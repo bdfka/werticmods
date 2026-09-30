@@ -1,7 +1,7 @@
 """
-WerticMods — API-сервер с токен-авторизацией.
+WerticMods — API-сервер с токен-авторизацией и устойчивым Modrinth.
 """
-import os, json, sqlite3, secrets
+import os, json, sqlite3, secrets, time as _time
 import requests
 from functools import wraps
 from flask import Flask, request, jsonify
@@ -9,9 +9,7 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 
 DB = "werticmods.db"
-MODRINTH_V2 = "https://api.modrinth.com/v2"
-MODRINTH_V3 = "https://api.modrinth.com/v3"
-UA = {"User-Agent": "WerticMods/2.0 (github.com/yourname/werticmods)"}
+UA = {"User-Agent": "WerticMods/2.1 (github.com/yourname/werticmods)"}
 
 app = Flask(__name__)
 app.secret_key = "werticmods_secret_change_me_v2"
@@ -133,7 +131,6 @@ def login():
     if not u or not check_password_hash(u["pass"], d.get("pass") or ""):
         c.close()
         return jsonify(error="Неверный ник или пароль"), 400
-    # Обновляем токен при каждом входе
     token = secrets.token_urlsafe(24)
     c.execute("UPDATE users SET token=? WHERE id=?", (token, u["id"]))
     c.commit()
@@ -184,7 +181,7 @@ def get_user(nick):
 
 @app.get("/api/health")
 def health():
-    return jsonify(ok=True, version="2.0")
+    return jsonify(ok=True, version="2.1")
 
 # ---------------- RESOURCES ----------------
 @app.get("/api/resources")
@@ -296,12 +293,37 @@ def delete_resource(rid):
     c.close()
     return jsonify(ok=True)
 
-# ---------------- MODRINTH ----------------
+# ---------------- MODRINTH (устойчивый) ----------------
 MR_TYPE_MAP = {
     "mod": "mod", "modpack": "modpack", "plugin": "plugin",
     "resourcepack": "resourcepack", "datapack": "datapack",
     "shader": "shader", "map": "modpack",
 }
+
+MR_BASES = [
+    "https://api.modrinth.com/v2",
+    "https://api.modrinth.com/v2",
+    "https://api.modrinth.com/v2",
+]
+
+def mr_request(path, params=None, timeout=25, retries=3):
+    """Запрос к Modrinth с несколькими попытками и увеличенным таймаутом."""
+    last_err = None
+    for attempt in range(retries):
+        base = MR_BASES[attempt % len(MR_BASES)]
+        try:
+            r = requests.get(
+                f"{base}{path}",
+                params=params or {},
+                headers=UA,
+                timeout=timeout,
+            )
+            r.raise_for_status()
+            return r
+        except Exception as e:
+            last_err = e
+            _time.sleep(0.5 * (attempt + 1))
+    raise last_err
 
 @app.get("/api/modrinth/search")
 def mr_search():
@@ -319,20 +341,22 @@ def mr_search():
 
     params = {"query": q or "", "facets": json.dumps(facets), "limit": 20}
     try:
-        r = requests.get(f"{MODRINTH_V2}/search", params=params, headers=UA, timeout=20)
-        r.raise_for_status()
+        r = mr_request("/search", params=params)
         return jsonify(r.json())
     except Exception as e:
-        return jsonify(error=str(e), hits=[]), 502
+        kind = type(e).__name__
+        return jsonify(
+            error=f"Modrinth недоступен ({kind}). Проверь интернет или включи VPN.",
+            hits=[]
+        ), 502
 
 @app.get("/api/modrinth/versions/<pid>")
 def mr_versions(pid):
     try:
-        r = requests.get(f"{MODRINTH_V2}/project/{pid}/version", headers=UA, timeout=20)
-        r.raise_for_status()
+        r = mr_request(f"/project/{pid}/version")
         return jsonify(r.json())
     except Exception as e:
-        return jsonify(error=str(e)), 502
+        return jsonify(error=f"Modrinth: {e}"), 502
 
 @app.post("/api/modrinth/install")
 @login_required
@@ -357,16 +381,21 @@ def mr_install():
     else:
         target = os.path.join(base, subfolder)
     os.makedirs(target, exist_ok=True)
-    try:
-        r = requests.get(url, headers=UA, stream=True, timeout=120)
-        r.raise_for_status()
-        path = os.path.join(target, filename)
-        with open(path, "wb") as f:
-            for chunk in r.iter_content(8192):
-                f.write(chunk)
-    except Exception as e:
-        return jsonify(error=str(e)), 500
-    return jsonify(ok=True, path=path)
+
+    last_err = None
+    for attempt in range(3):
+        try:
+            r = requests.get(url, headers=UA, stream=True, timeout=120)
+            r.raise_for_status()
+            path = os.path.join(target, filename)
+            with open(path, "wb") as f:
+                for chunk in r.iter_content(8192):
+                    f.write(chunk)
+            return jsonify(ok=True, path=path)
+        except Exception as e:
+            last_err = e
+            _time.sleep(0.7 * (attempt + 1))
+    return jsonify(error=f"Не удалось скачать файл: {last_err}"), 500
 
 # ---------------- ADMIN ----------------
 @app.get("/api/admin/users")
