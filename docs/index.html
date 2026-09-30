@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>WerticMods</title>
+<style>
+:root{--bg:#0b0d13;--panel:rgba(20,22,32,.65);--border:rgba(120,150,255,.18);
+--accent:#7c5cff;--accent2:#22d3ee;--text:#e8ecff;--muted:#8b93b8}
+*{box-sizing:border-box;font-family:'Segoe UI',Inter,system-ui,sans-serif}
+html,body{margin:0;background:var(--bg);color:var(--text);min-height:100%}
+body::before{content:'';position:fixed;inset:0;z-index:-1;
+ background:radial-gradient(600px 400px at 15% 10%,rgba(124,92,255,.35),transparent 60%),
+ radial-gradient(700px 500px at 85% 90%,rgba(34,211,238,.25),transparent 60%),
+ radial-gradient(500px 400px at 50% 50%,rgba(255,92,180,.12),transparent 70%);
+ filter:blur(10px)}
+header{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);
+ background:rgba(10,12,20,.55);border-bottom:1px solid var(--border);
+ padding:12px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.logo{font-weight:800;font-size:20px;background:linear-gradient(90deg,var(--accent),var(--accent2));
+ -webkit-background-clip:text;background-clip:text;color:transparent;
+ text-shadow:0 0 20px rgba(124,92,255,.5);cursor:pointer}
+nav{display:flex;gap:8px;flex:1;flex-wrap:wrap}
+.tab{padding:8px 16px;border-radius:10px;cursor:pointer;color:var(--muted);
+ border:1px solid transparent;transition:.2s;user-select:none}
+.tab:hover{color:var(--text);background:rgba(124,92,255,.08)}
+.tab.active{color:#fff;border-color:var(--border);
+ background:linear-gradient(180deg,rgba(124,92,255,.25),rgba(124,92,255,.05));
+ box-shadow:0 0 20px rgba(124,92,255,.35)}
+button{cursor:pointer;border:1px solid var(--border);background:rgba(124,92,255,.15);
+ color:var(--text);padding:8px 14px;border-radius:10px;transition:.2s;font-size:14px}
+button:hover{background:rgba(124,92,255,.3);box-shadow:0 0 14px rgba(124,92,255,.45)}
+button.primary{background:linear-gradient(90deg,var(--accent),#5b3df0);border:none;
+ box-shadow:0 0 18px rgba(124,92,255,.6)}
+button.danger{background:rgba(255,70,90,.2);border-color:rgba(255,70,90,.4)}
+input,textarea,select{background:rgba(15,17,26,.7);border:1px solid var(--border);
+ color:var(--text);padding:9px 12px;border-radius:10px;outline:none;width:100%;
+ transition:.2s;font-size:14px}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);
+ box-shadow:0 0 0 3px rgba(124,92,255,.2)}
+main{max-width:1200px;margin:22px auto;padding:0 20px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:16px;
+ padding:16px;backdrop-filter:blur(18px);position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;inset:0;border-radius:16px;padding:1px;
+ background:linear-gradient(135deg,rgba(124,92,255,.5),transparent 40%,rgba(34,211,238,.4));
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+ -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.res{display:flex;flex-direction:column;gap:8px;transition:.25s;cursor:pointer}
+.res:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(124,92,255,.25)}
+.res img.banner{width:100%;height:120px;object-fit:cover;border-radius:10px;background:#111}
+.res .row{display:flex;gap:10px;align-items:center}
+.res img.icon{width:40px;height:40px;border-radius:8px;object-fit:cover;background:#111}
+.res h3{margin:0;font-size:16px}
+.muted{color:var(--muted);font-size:12px}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;
+ background:rgba(34,211,238,.15);border:1px solid rgba(34,211,238,.35);color:#9ff}
+.badge.mod{background:rgba(124,92,255,.15);border-color:rgba(124,92,255,.4);color:#cbb}
+.badge.modpack{background:rgba(255,180,80,.15);border-color:rgba(255,180,80,.4);color:#fd8}
+.check{color:#6ee7b7}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);
+ display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-bg.on{display:flex}
+.modal{max-width:640px;width:100%;max-height:90vh;overflow:auto}
+.modal h2{margin-top:0}
+.form-row{margin-bottom:10px;display:flex;flex-direction:column;gap:4px}
+label{font-size:12px;color:var(--muted)}
+.toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:12px;
+ background:rgba(124,92,255,.25);border:1px solid var(--border);backdrop-filter:blur(12px);
+ z-index:200;box-shadow:0 0 30px rgba(124,92,255,.5);opacity:0;transition:.3s;pointer-events:none}
+.toast.on{opacity:1;transform:translateY(-4px)}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);
+ border-top-color:#fff;border-radius:50%;display:inline-block;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+.status{position:fixed;bottom:16px;left:16px;padding:6px 12px;border-radius:10px;
+ background:rgba(10,12,20,.7);border:1px solid var(--border);font-size:12px;color:var(--muted);
+ backdrop-filter:blur(10px);z-index:150}
+.status.ok{color:#6ee7b7;border-color:rgba(110,231,183,.4)}
+.status.bad{color:#fca5a5;border-color:rgba(252,165,165,.4)}
+</style></head><body>
+<header>
+  <div class="logo" onclick="go('mods')">WerticMods</div>
+  <nav>
+    <div class="tab active" data-tab="mods" onclick="go('mods')">Моды</div>
+    <div class="tab" data-tab="modpacks" onclick="go('modpacks')">Сборки</div>
+    <div class="tab" data-tab="mr" onclick="go('mr')">Modrinth</div>
+    <div class="tab" data-tab="mine" onclick="go('mine')">Мои ресурсы</div>
+    <div class="tab" data-tab="support" onclick="go('support')">Поддержка</div>
+    <div class="tab hidden" id="adminTab" data-tab="admin" onclick="go('admin')">Админ</div>
+  </nav>
+  <div id="userBox"></div>
+</header>
+<main id="app"></main>
+
+<div class="modal-bg" id="authModal"><div class="card modal" style="max-width:380px">
+  <h2 id="authTitle">Вход</h2>
+  <div class="form-row"><label>Ник</label><input id="authNick"/></div>
+  <div class="form-row"><label>Пароль</label><input id="authPass" type="password"/></div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="primary" onclick="doAuth()">OK</button>
+    <button onclick="toggleAuthMode()" id="authToggle">Регистрация</button>
+    <button onclick="closeAuth()">Отмена</button>
+  </div>
+  <p class="muted" style="margin-top:10px">Встроенный админ: <b>bdfka / bdfka</b></p>
+</div></div>
+
+<div class="modal-bg" id="resModal"><div class="card modal" id="resBody"></div></div>
+<div class="toast" id="toast"></div>
+<div class="status" id="status">проверка сервера…</div>
+
+<script>
+// ⬇⬇⬇ ВАЖНО: фронт на github.io, API всегда на localhost ⬇⬇⬇
+const API_BASE = 'http://127.0.0.1:5000';
+
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+let ME=null, AUTH_MODE='login', TAB='mods', ADMIN_USERS=[], CURRENT_RES_ID=null;
+
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');
+  clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2400)}
+
+function setStatus(ok,text){
+  const el=$('#status');
+  el.className='status '+(ok?'ok':'bad');
+  el.textContent=text;
+}
+
+async function checkServer(){
+  try{
+    const r=await fetch(API_BASE+'/api/health',{credentials:'include'});
+    const j=await r.json();
+    if(j.ok){ setStatus(true,'● сервер онлайн · v'+j.version); return true; }
+    setStatus(false,'● сервер не отвечает'); return false;
+  }catch(e){ setStatus(false,'● сервер офлайн (запусти app.py)'); return false; }
+}
+
+async function api(url,opt={}){
+  opt.headers=Object.assign({'Content-Type':'application/json'},opt.headers||{});
+  if(opt.body&&typeof opt.body!=='string')opt.body=JSON.stringify(opt.body);
+  opt.credentials='include';
+  const r=await fetch(API_BASE+url,opt);
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+  return j;
+}
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function refreshMe(){
+  try{const j=await api('/api/me');ME=j.user}catch{ME=null}
+  const box=$('#userBox');
+  if(ME){
+    box.innerHTML=`<span class="muted" style="margin-right:8px">${esc(ME.nick)}${ME.verified?' <span class="check">✔</span>':''}${ME.is_admin?' <span class="badge">admin</span>':''}</span>
+      <button onclick="logout()">Выйти</button>`;
+    $('#adminTab').classList.toggle('hidden',!ME.is_admin);
+  }else{
+    box.innerHTML=`<button class="primary" onclick="openAuth()">Войти</button>`;
+    $('#adminTab').classList.add('hidden');
+    if(TAB==='admin'||TAB==='mine')go('mods');
+  }
+}
+function openAuth(){$('#authModal').classList.add('on')}
+function closeAuth(){$('#authModal').classList.remove('on')}
+function toggleAuthMode(){
+  AUTH_MODE=AUTH_MODE==='login'?'register':'login';
+  $('#authTitle').textContent=AUTH_MODE==='login'?'Вход':'Регистрация';
+  $('#authToggle').textContent=AUTH_MODE==='login'?'Регистрация':'Уже есть аккаунт';
+}
+async function doAuth(){
+  try{
+    const nick=$('#authNick').value, pass=$('#authPass').value;
+    await api('/api/'+AUTH_MODE,{method:'POST',body:{nick,pass}});
+    closeAuth(); await refreshMe(); go(TAB); toast('OK');
+  }catch(e){toast(e.message)}
+}
+async function logout(){await api('/api/logout',{method:'POST'});await refreshMe();go('mods')}
+
+function go(t){TAB=t;CURRENT_RES_ID=null;$$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));render()}
+
+const RES_FIELDS = [
+  ['name','Название *'],['type','Тип (mod / modpack) *'],['description','Описание'],
+  ['banner','Ссылка на шапку (баннер)'],['icon','Ссылка на иконку'],
+  ['gallery','Галерея скриншотов (URL через ;)'],
+  ['downloads','Ссылки на скачку (через ;)'],
+  ['libraries','Доп. библиотеки (через ;)'],
+  ['optional_libraries','Необязательные библиотеки (через ;)'],
+  ['coauthors','Соавторы (ники через запятую)'],
+  ['game_version','Версия игры'],['loader','Загрузчик (fabric/forge/...)']
+];
+function resFormHTML(r={}){
+  return `<h2>${r.id?'Редактирование':'Публикация ресурса'}</h2>`+
+   RES_FIELDS.map(([k,l])=>{
+     let v=(r[k]??'').toString();
+     if(k==='coauthors' && r.coauthors_list) v=r.coauthors_list.join(', ');
+     if(k==='gallery' && r.gallery_list) v=r.gallery_list.join('; ');
+     return `<div class="form-row"><label>${l}</label>
+       <input id="f_${k}" value="${v.replace(/"/g,'&quot;')}"/></div>`;
+   }).join('')+
+   `<div style="display:flex;gap:8px;margin-top:12px">
+      <button class="primary" onclick="saveRes(${r.id||0})">Сохранить</button>
+      <button onclick="closeRes()">Отмена</button>
+    </div>`;
+}
+function openRes(r={}){$('#resBody').innerHTML=resFormHTML(r);$('#resModal').classList.add('on')}
+function closeRes(){$('#resModal').classList.remove('on')}
+async function saveRes(id){
+  const d={};RES_FIELDS.forEach(([k])=>d[k]=$('#f_'+k).value);
+  try{
+    if(id) await api('/api/resources/'+id,{method:'PUT',body:d});
+    else await api('/api/resources',{method:'POST',body:d});
+    closeRes();toast('Сохранено');render();
+  }catch(e){toast(e.message)}
+}
+async function delRes(id){
+  if(!confirm('Удалить ресурс?'))return;
+  try{await api('/api/resources/'+id,{method:'DELETE'});toast('Удалено');render()}
+  catch(e){toast(e.message)}
+}
+
+function resCard(r,admin=false){
+  const links=(r.downloads||'').split(';').filter(Boolean);
+  return `<div class="card res" data-id="${r.id}" onclick="openResource(${r.id})">
+    ${r.banner?`<img class="banner" src="${esc(r.banner)}" onerror="this.style.display='none'">`:''}
+    <div class="row">
+      ${r.icon?`<img class="icon" src="${esc(r.icon)}" onerror="this.style.display='none'">`:''}
+      <div style="flex:1"><h3>${esc(r.name)} ${r.verified?'<span class="check">✔</span>':''}</h3>
+        <div class="muted">от ${esc(r.nick||'?')} · ${esc(r.game_version||'—')} ${r.loader?'· '+esc(r.loader):''}</div>
+      </div><span class="badge ${esc(r.type)}">${esc(r.type)}</span>
+    </div>
+    <div class="muted">${esc((r.description||'').slice(0,220))}</div>
+    <div class="actions" onclick="event.stopPropagation()">
+      <button class="primary" onclick="openResource(${r.id})">Открыть</button>
+      ${links.length?`<button onclick="window.open('${esc(links[0].trim())}','_blank')">Скачать</button>`:''}
+      ${admin||(ME&&(ME.id===r.author_id||ME.is_admin))?`
+        <button onclick='openRes(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Ред.</button>
+        <button class="danger" onclick="delRes(${r.id})">Удалить</button>`:''}
+    </div>
+  </div>`;
+}
+
+async function openResource(id){CURRENT_RES_ID=id;TAB='resource';$$('.tab').forEach(x=>x.classList.remove('active'));render()}
+
+async function renderResource(){
+  const app=$('#app');
+  try{
+    const {resource:r}=await api('/api/resources/'+CURRENT_RES_ID);
+    const links=(r.downloads||'').split(';').filter(Boolean);
+    const libs=(r.libraries||'').split(';').filter(Boolean);
+    const optlibs=(r.optional_libraries||'').split(';').filter(Boolean);
+    const isOwner = ME && (ME.id===r.author_id || ME.is_admin);
+    app.innerHTML=`
+      <div class="toolbar">
+        <button onclick="go('${r.type==='modpack'?'modpacks':'mods'}')">← Назад</button>
+        ${isOwner?`<button onclick='openRes(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Редактировать</button>`:''}
+        ${isOwner?`<button class="danger" onclick="delRes(${r.id}).then(()=>go('mods'))">Удалить</button>`:''}
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px">
+        ${r.banner?`<img src="${esc(r.banner)}" style="width:100%;height:260px;object-fit:cover;display:block" onerror="this.style.display='none'">`:''}
+        <div style="padding:20px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+          ${r.icon?`<img src="${esc(r.icon)}" style="width:96px;height:96px;border-radius:16px;object-fit:cover" onerror="this.style.display='none'">`:''}
+          <div style="flex:1;min-width:240px">
+            <h1 style="margin:0 0 6px">${esc(r.name)}</h1>
+            <div class="muted" style="margin-bottom:10px">
+              <span class="badge ${esc(r.type)}">${esc(r.type)}</span>
+              ${r.game_version?` · <b>${esc(r.game_version)}</b>`:''}
+              ${r.loader?` · ${esc(r.loader)}`:''} · ID ${r.id}
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              ${links.map((l,i)=>`<button class="primary" onclick="window.open('${esc(l.trim())}','_blank')">⬇ Скачать ${i+1}</button>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:2fr 1fr">
+        <div class="card">
+          <h3>Описание</h3>
+          <div style="white-space:pre-wrap;line-height:1.55">${esc(r.description||'—')}</div>
+          ${r.gallery_list&&r.gallery_list.length?`
+            <h3 style="margin-top:18px">Галерея</h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
+              ${r.gallery_list.map(g=>`<img src="${esc(g)}" style="width:100%;border-radius:10px;cursor:pointer"
+                onerror="this.style.display='none'" onclick="window.open('${esc(g)}','_blank')">`).join('')}
+            </div>`:''}
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:12px">
+            <h3>Автор</h3>
+            <div style="display:flex;gap:10px;align-items:center">
+              <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2))"></div>
+              <div><b>${esc(r.author_nick)}</b> ${r.author_verified?'<span class="check">✔</span>':''}
+                <div class="muted">владелец</div></div>
+            </div>
+          </div>
+          ${r.coauthors_details&&r.coauthors_details.length?`
+          <div class="card" style="margin-bottom:12px">
+            <h3>Соавторы</h3>
+            ${r.coauthors_details.map(c=>`
+              <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+                <div style="width:32px;height:32px;border-radius:50%;background:rgba(124,92,255,.35)"></div>
+                <div><b>${esc(c.nick)}</b> ${c.verified?'<span class="check">✔</span>':''}</div>
+              </div>`).join('')}
+          </div>`:''}
+          ${libs.length?`<div class="card" style="margin-bottom:12px">
+            <h3>Требуемые библиотеки</h3>
+            ${libs.map(l=>`<div class="muted" style="margin-bottom:4px">• ${esc(l)}</div>`).join('')}
+          </div>`:''}
+          ${optlibs.length?`<div class="card" style="margin-bottom:12px">
+            <h3>Опциональные библиотеки</h3>
+            ${optlibs.map(l=>`<div class="muted" style="margin-bottom:4px">• ${esc(l)}</div>`).join('')}
+          </div>`:''}
+        </div>
+      </div>`;
+  }catch(e){$('#app').innerHTML='<div class="muted">Ошибка: '+esc(e.message)+'</div>'}
+}
+
+async function render(){
+  const app=$('#app'); app.innerHTML='<div class="spin"></div>';
+  try{
+    if(TAB==='resource' && CURRENT_RES_ID){ return renderResource(); }
+    if(TAB==='mods'||TAB==='modpacks'){
+      const type=TAB==='mods'?'mod':'modpack';
+      const q=sessionStorage['q_'+TAB]||'';
+      const j=await api(`/api/resources?type=${type}&q=${encodeURIComponent(q)}`);
+      app.innerHTML=`
+        <div class="toolbar">
+          <input id="q" placeholder="Поиск ${type==='mod'?'модов':'сборок'}..." value="${esc(q)}" style="max-width:340px"/>
+          <button onclick="doSearch('${TAB}')">Найти</button>
+          ${ME?`<button class="primary" onclick="openRes({type:'${type}'})">+ Опубликовать</button>`:''}
+        </div>
+        <div class="grid">${j.resources.length?j.resources.map(r=>resCard(r)).join(''):'<div class="muted">Пусто</div>'}</div>`;
+      $('#q').onkeydown=e=>{if(e.key==='Enter')doSearch(TAB)};
+    }
+    else if(TAB==='mine'){
+      if(!ME)return go('mods');
+      const j=await api('/api/resources?q=');
+      const mine=j.resources.filter(r=>r.author_id===ME.id);
+      app.innerHTML=`<div class="toolbar"><h2 style="margin:0">Мои ресурсы</h2>
+        <button class="primary" onclick="openRes()">+ Новый</button></div>
+        <div class="grid">${mine.length?mine.map(r=>resCard(r)).join(''):'<div class="muted">Пока пусто</div>'}</div>`;
+    }
+    else if(TAB==='mr'){
+      app.innerHTML=`
+        <div class="toolbar">
+          <input id="mrq" placeholder="Поиск в Modrinth..." style="max-width:420px"/>
+          <select id="mrt" style="max-width:180px">
+            <option value="mod">Моды</option><option value="modpack">Сборки</option>
+            <option value="shader">Шейдеры</option><option value="resourcepack">Ресурспаки</option>
+          </select>
+          <button class="primary" onclick="mrSearch()">Искать</button>
+          <button onclick="mrPopular()">Популярное</button>
+        </div>
+        <div class="grid" id="mrGrid"><div class="muted">Введите запрос</div></div>`;
+      $('#mrq').onkeydown=e=>{if(e.key==='Enter')mrSearch()};
+      mrPopular();
+    }
+    else if(TAB==='support'){
+      const j=ME?await api('/api/tickets'):{tickets:[]};
+      app.innerHTML=`
+        ${ME?`<div class="card" style="margin-bottom:16px">
+          <h3>Новое обращение</h3>
+          <textarea id="tkmsg" rows="3" placeholder="Опишите проблему..."></textarea>
+          <div style="margin-top:8px"><button class="primary" onclick="sendTicket()">Отправить</button></div>
+        </div>`:'<div class="muted">Войдите, чтобы писать в поддержку</div>'}
+        <div class="grid">${j.tickets.map(t=>`<div class="card">
+          <div style="display:flex;gap:8px;align-items:center"><span class="badge">${esc(t.status)}</span>
+            <span class="muted">#${t.id} ${t.nick?'от '+esc(t.nick):''}</span></div>
+          <div style="margin:8px 0">${esc(t.message)}</div>
+          ${t.answer?`<div class="card" style="background:rgba(34,211,238,.08)"><b>Ответ:</b> ${esc(t.answer)}</div>`:''}
+          ${ME&&ME.is_admin&&t.status!=='closed'?
+            `<textarea id="ans_${t.id}" rows="2" placeholder="Ответ..."></textarea>
+             <div style="margin-top:6px"><button onclick="answerTicket(${t.id})">Ответить</button></div>`:''}
+        </div>`).join('')}</div>`;
+    }
+    else if(TAB==='admin'){
+      if(!ME||!ME.is_admin)return go('mods');
+      ADMIN_USERS=(await api('/api/admin/users')).users;
+      const res=(await api('/api/resources?q=')).resources;
+      app.innerHTML=`
+        <h2>Админ панель</h2><h3>Пользователи</h3>
+        <div class="grid">${ADMIN_USERS.map(u=>`<div class="card">
+          <div style="display:flex;gap:8px;align-items:center"><b>${esc(u.nick)}</b>
+            ${u.is_admin?'<span class="badge">admin</span>':''}
+            ${u.verified?'<span class="check">✔</span>':''}</div>
+          <div class="muted">ID ${u.id} · ${esc(u.created)}</div>
+          <div class="actions">
+            <button onclick="toggleVerify(${u.id},${u.verified?0:1})">${u.verified?'Снять галочку':'Выдать галочку'}</button>
+            <button onclick="toggleAdmin(${u.id},${u.is_admin?0:1})">${u.is_admin?'Снять админа':'Сделать админом'}</button>
+          </div></div>`).join('')}</div>
+        <h3 style="margin-top:22px">Все ресурсы</h3>
+        <div class="grid">${res.map(r=>resCard(r,true)).join('')}</div>`;
+    }
+  }catch(e){app.innerHTML='<div class="muted">Ошибка: '+esc(e.message)+'</div>'}
+}
+
+function doSearch(tab){sessionStorage['q_'+tab]=$('#q').value;render()}
+
+async function mrSearch(){
+  const q=$('#mrq').value, t=$('#mrt').value;
+  $('#mrGrid').innerHTML='<div class="spin"></div>';
+  try{ mrRender((await api(`/api/modrinth/search?q=${encodeURIComponent(q)}&type=${t}`)).hits||[]); }
+  catch(e){$('#mrGrid').innerHTML='<div class="muted">'+esc(e.message)+'</div>'}
+}
+async function mrPopular(){
+  try{ mrRender((await api(`/api/modrinth/search?q=&type=mod`)).hits||[]); }catch(e){}
+}
+function mrRender(hits){
+  $('#mrGrid').innerHTML=hits.length?hits.map(h=>`
+    <div class="card res">
+      ${h.gallery&&h.gallery[0]?`<img class="banner" src="${esc(h.gallery[0])}" onerror="this.style.display='none'">`:''}
+      <div class="row">
+        ${h.icon_url?`<img class="icon" src="${esc(h.icon_url)}">`:''}
+        <div style="flex:1"><h3>${esc(h.title)}</h3>
+          <div class="muted">⬇ ${h.downloads} · ${esc(h.author||'')}</div></div>
+      </div>
+      <div class="muted">${esc(h.description||'')}</div>
+      <div class="actions">
+        <button class="primary" onclick="mrInstall('${h.project_id}')">Установить</button>
+        <button onclick="window.open('https://modrinth.com/project/${h.slug}','_blank')">Открыть</button>
+      </div>
+    </div>`).join(''):'<div class="muted">Ничего не найдено</div>';
+}
+async function mrInstall(pid){
+  try{
+    const versions=await api('/api/modrinth/versions/'+pid);
+    if(!versions.length)return toast('Нет версий');
+    const modal=document.createElement('div');
+    modal.className='modal-bg on';
+    modal.innerHTML=`<div class="card modal">
+      <h2>Установка</h2>
+      <div class="form-row"><label>Версия файла</label>
+        <select id="vsel">${versions.map((v,i)=>
+          `<option value="${i}">${esc(v.name)} · ${v.loaders.join(',')} · ${v.game_versions.join(',')}</option>`).join('')}
+        </select></div>
+      <div class="form-row"><label>Куда ставить?</label>
+        <select id="target">
+          <option value="">.minecraft/mods (глобально)</option>
+          <option value="__custom__">.minecraft/versions/&lt;версия&gt;/mods</option>
+        </select></div>
+      <div class="form-row hidden" id="verRow"><label>Название папки версии</label>
+        <input id="verName" placeholder="например MyPack-1.20.4"/></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="primary" id="goBtn">Скачать</button>
+        <button onclick="this.closest('.modal-bg').remove()">Отмена</button>
+      </div>
+    </div>`;
+    document.body.appendChild(modal);
+    const tSel=modal.querySelector('#target'), verRow=modal.querySelector('#verRow');
+    tSel.onchange=()=>verRow.classList.toggle('hidden',tSel.value!=='__custom__');
+    modal.querySelector('#goBtn').onclick=async()=>{
+      const v=versions[+modal.querySelector('#vsel').value];
+      const file=v.files.find(f=>f.primary)||v.files[0];
+      const version=tSel.value==='__custom__'?(modal.querySelector('#verName').value.trim()||'custom'):'';
+      try{
+        const r=await api('/api/modrinth/install',{method:'POST',body:{
+          url:file.url,filename:file.filename,version
+        }});
+        toast('Скачано: '+r.path);
+        modal.remove();
+      }catch(e){toast(e.message)}
+    };
+  }catch(e){toast(e.message)}
+}
+async function sendTicket(){
+  try{await api('/api/tickets',{method:'POST',body:{message:$('#tkmsg').value}});
+    toast('Отправлено');render()}catch(e){toast(e.message)}
+}
+async function answerTicket(id){
+  try{await api(`/api/tickets/${id}/answer`,{method:'POST',body:{answer:$('#ans_'+id).value}});
+    toast('Ответ отправлен');render()}catch(e){toast(e.message)}
+}
+async function toggleVerify(id,v){await api('/api/admin/verify/'+id,{method:'POST',body:{verified:v}});render()}
+async function toggleAdmin(id,v){await api('/api/admin/makeadmin/'+id,{method:'POST',body:{admin:v}});render()}
+
+(async()=>{
+  await checkServer();
+  await refreshMe();
+  render();
+  setInterval(checkServer, 10000); // проверяем сервер каждые 10 секунд
+})();
+</script>
+</body></html>
