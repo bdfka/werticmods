@@ -1,123 +1,324 @@
 <!doctype html>
-<html lang="ru"><head>
+<html lang="ru" data-theme="dark">
+<head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>WerticMods</title>
 <style>
-:root{--bg:#0b0d13;--panel:rgba(20,22,32,.65);--border:rgba(120,150,255,.18);
---accent:#7c5cff;--accent2:#22d3ee;--text:#e8ecff;--muted:#8b93b8}
+/* ================== ТЕМЫ ================== */
+:root[data-theme="dark"]{
+  --bg:#0b0d13; --panel:rgba(20,22,32,.72); --border:rgba(120,150,255,.18);
+  --accent:#7c5cff; --accent2:#22d3ee; --text:#e8ecff; --muted:#8b93b8;
+  --bg1:rgba(124,92,255,.35); --bg2:rgba(34,211,238,.25); --bg3:rgba(255,92,180,.12);
+}
+:root[data-theme="light"]{
+  --bg:#f4f5fb; --panel:rgba(255,255,255,.78); --border:rgba(80,90,180,.18);
+  --accent:#6a45ff; --accent2:#0891b2; --text:#12141f; --muted:#5b6280;
+  --bg1:rgba(124,92,255,.28); --bg2:rgba(34,211,238,.22); --bg3:rgba(255,92,180,.15);
+}
+:root[data-theme="midnight"]{
+  --bg:#05060c; --panel:rgba(10,15,30,.72); --border:rgba(80,180,255,.22);
+  --accent:#00b8ff; --accent2:#a855f7; --text:#dcefff; --muted:#6a87b8;
+  --bg1:rgba(0,184,255,.28); --bg2:rgba(168,85,247,.25); --bg3:rgba(255,255,255,.05);
+}
+:root[data-theme="forest"]{
+  --bg:#0a1410; --panel:rgba(15,30,22,.72); --border:rgba(90,200,140,.22);
+  --accent:#22c55e; --accent2:#84cc16; --text:#e0f5e7; --muted:#6ea083;
+  --bg1:rgba(34,197,94,.28); --bg2:rgba(132,204,22,.22); --bg3:rgba(0,255,180,.1);
+}
+:root[data-theme="sunset"]{
+  --bg:#160b12; --panel:rgba(35,15,25,.72); --border:rgba(255,120,120,.22);
+  --accent:#ff5c8a; --accent2:#ffb84d; --text:#ffe9ee; --muted:#b8838f;
+  --bg1:rgba(255,92,138,.35); --bg2:rgba(255,184,77,.25); --bg3:rgba(180,92,255,.18);
+}
+
 *{box-sizing:border-box;font-family:'Segoe UI',Inter,system-ui,sans-serif}
-html,body{margin:0;background:var(--bg);color:var(--text);min-height:100%}
+html,body{margin:0;background:var(--bg);color:var(--text);min-height:100%;
+  transition:background .35s ease,color .35s ease}
 body::before{content:'';position:fixed;inset:0;z-index:-1;
- background:radial-gradient(600px 400px at 15% 10%,rgba(124,92,255,.35),transparent 60%),
- radial-gradient(700px 500px at 85% 90%,rgba(34,211,238,.25),transparent 60%),
- radial-gradient(500px 400px at 50% 50%,rgba(255,92,180,.12),transparent 70%);
- filter:blur(10px)}
-header{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);
- background:rgba(10,12,20,.55);border-bottom:1px solid var(--border);
- padding:12px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-.logo{font-weight:800;font-size:20px;background:linear-gradient(90deg,var(--accent),var(--accent2));
- -webkit-background-clip:text;background-clip:text;color:transparent;
- text-shadow:0 0 20px rgba(124,92,255,.5);cursor:pointer}
-nav{display:flex;gap:8px;flex:1;flex-wrap:wrap}
-.tab{padding:8px 16px;border-radius:10px;cursor:pointer;color:var(--muted);
- border:1px solid transparent;transition:.2s;user-select:none}
-.tab:hover{color:var(--text);background:rgba(124,92,255,.08)}
+  background:
+    radial-gradient(600px 400px at 15% 10%,var(--bg1),transparent 60%),
+    radial-gradient(700px 500px at 85% 90%,var(--bg2),transparent 60%),
+    radial-gradient(500px 400px at 50% 50%,var(--bg3),transparent 70%);
+  filter:blur(10px);transition:background .35s ease}
+
+/* ================== HEADER ================== */
+header{position:sticky;top:0;z-index:20;backdrop-filter:blur(16px);
+  background:var(--panel);border-bottom:1px solid var(--border);
+  padding:10px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.logo{font-weight:900;font-size:20px;letter-spacing:.5px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 24px var(--accent);cursor:pointer;
+  transition:transform .3s;animation:glow 3s ease-in-out infinite alternate}
+.logo:hover{transform:scale(1.06)}
+@keyframes glow{from{filter:brightness(1)}to{filter:brightness(1.35)}}
+nav{display:flex;gap:5px;flex:1;flex-wrap:wrap}
+.tab{padding:7px 13px;border-radius:10px;cursor:pointer;color:var(--muted);
+  border:1px solid transparent;transition:.25s;user-select:none;font-size:13px;
+  position:relative;overflow:hidden}
+.tab::after{content:'';position:absolute;left:50%;bottom:0;width:0;height:2px;
+  background:var(--accent);transition:.3s;transform:translateX(-50%)}
+.tab:hover{color:var(--text);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.tab:hover::after{width:60%}
 .tab.active{color:#fff;border-color:var(--border);
- background:linear-gradient(180deg,rgba(124,92,255,.25),rgba(124,92,255,.05));
- box-shadow:0 0 20px rgba(124,92,255,.35)}
-button{cursor:pointer;border:1px solid var(--border);background:rgba(124,92,255,.15);
- color:var(--text);padding:8px 14px;border-radius:10px;transition:.2s;font-size:14px}
-button:hover{background:rgba(124,92,255,.3);box-shadow:0 0 14px rgba(124,92,255,.45)}
-button.primary{background:linear-gradient(90deg,var(--accent),#5b3df0);border:none;
- box-shadow:0 0 18px rgba(124,92,255,.6)}
-button.danger{background:rgba(255,70,90,.2);border-color:rgba(255,70,90,.4)}
-input,textarea,select{background:rgba(15,17,26,.7);border:1px solid var(--border);
- color:var(--text);padding:9px 12px;border-radius:10px;outline:none;width:100%;
- transition:.2s;font-size:14px}
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 30%,transparent),
+    color-mix(in srgb,var(--accent) 5%,transparent));
+  box-shadow:0 0 22px color-mix(in srgb,var(--accent) 45%,transparent)}
+.tab.active::after{width:80%}
+
+button{cursor:pointer;border:1px solid var(--border);
+  background:color-mix(in srgb,var(--accent) 12%,transparent);
+  color:var(--text);padding:8px 14px;border-radius:10px;transition:.22s;
+  font-size:14px;position:relative;overflow:hidden}
+button:hover{background:color-mix(in srgb,var(--accent) 28%,transparent);
+  box-shadow:0 0 16px color-mix(in srgb,var(--accent) 55%,transparent);
+  transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+button.primary{background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border:none;color:#fff;
+  box-shadow:0 0 20px color-mix(in srgb,var(--accent) 60%,transparent)}
+button.primary:hover{box-shadow:0 0 30px color-mix(in srgb,var(--accent) 85%,transparent)}
+button.danger{background:rgba(255,70,90,.18);border-color:rgba(255,70,90,.4);color:#ffb0b8}
+button.ghost{background:transparent}
+
+input,textarea,select{background:color-mix(in srgb,var(--bg) 65%,transparent);
+  border:1px solid var(--border);color:var(--text);padding:9px 12px;
+  border-radius:10px;outline:none;width:100%;transition:.2s;font-size:14px}
 input:focus,textarea:focus,select:focus{border-color:var(--accent);
- box-shadow:0 0 0 3px rgba(124,92,255,.2)}
-main{max-width:1200px;margin:22px auto;padding:0 20px}
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+
+.theme-picker{display:flex;gap:5px;align-items:center}
+.theme-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;
+  border:2px solid transparent;transition:.2s}
+.theme-dot:hover{transform:scale(1.15)}
+.theme-dot.active{border-color:var(--text);box-shadow:0 0 12px var(--accent)}
+
+.version-picker{min-width:130px;max-width:170px;padding:6px 10px;font-size:13px}
+
+main{max-width:1240px;margin:22px auto;padding:0 18px;animation:fadeUp .5s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ================== CARDS ================== */
 .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;
- padding:16px;backdrop-filter:blur(18px);position:relative;overflow:hidden}
+  padding:16px;backdrop-filter:blur(18px);position:relative;overflow:hidden;
+  transition:.25s}
 .card::before{content:'';position:absolute;inset:0;border-radius:16px;padding:1px;
- background:linear-gradient(135deg,rgba(124,92,255,.5),transparent 40%,rgba(34,211,238,.4));
- -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
- -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.6}
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 60%,transparent),
+    transparent 40%,color-mix(in srgb,var(--accent2) 50%,transparent));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.6}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.res{display:flex;flex-direction:column;gap:8px;transition:.25s;cursor:pointer}
-.res:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(124,92,255,.25)}
-.res img.banner{width:100%;height:120px;object-fit:cover;border-radius:10px;background:#111}
+.res{display:flex;flex-direction:column;gap:8px;cursor:pointer;
+  animation:fadeUp .45s ease backwards}
+.res:hover{transform:translateY(-4px);
+  box-shadow:0 16px 50px color-mix(in srgb,var(--accent) 35%,transparent)}
+.res img.banner{width:100%;height:130px;object-fit:cover;border-radius:10px;
+  background:#111;transition:.4s}
+.res:hover img.banner{transform:scale(1.03);filter:brightness(1.08)}
 .res .row{display:flex;gap:10px;align-items:center}
-.res img.icon{width:40px;height:40px;border-radius:8px;object-fit:cover;background:#111}
+.res img.icon{width:42px;height:42px;border-radius:10px;object-fit:cover;background:#111}
 .res h3{margin:0;font-size:16px}
 .muted{color:var(--muted);font-size:12px}
 .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;
- background:rgba(34,211,238,.15);border:1px solid rgba(34,211,238,.35);color:#9ff}
-.badge.mod{background:rgba(124,92,255,.15);border-color:rgba(124,92,255,.4);color:#cbb}
-.badge.modpack{background:rgba(255,180,80,.15);border-color:rgba(255,180,80,.4);color:#fd8}
+  background:color-mix(in srgb,var(--accent2) 18%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent2) 40%,transparent);
+  color:color-mix(in srgb,var(--accent2) 70%,#fff)}
+.badge.mod{--c:var(--accent);background:color-mix(in srgb,var(--accent) 18%,transparent);
+  border-color:color-mix(in srgb,var(--accent) 40%,transparent);
+  color:color-mix(in srgb,var(--accent) 70%,#fff)}
+.badge.modpack{--c:#f59e0b;background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.4);color:#fcd34d}
+.badge.plugin{--c:#22c55e;background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.4);color:#86efac}
+.badge.map{--c:#f97316;background:rgba(249,115,22,.15);border-color:rgba(249,115,22,.4);color:#fdba74}
+.badge.resourcepack{--c:#a855f7;background:rgba(168,85,247,.15);border-color:rgba(168,85,247,.4);color:#d8b4fe}
+.badge.datapack{--c:#06b6d4;background:rgba(6,182,212,.15);border-color:rgba(6,182,212,.4);color:#67e8f9}
 .check{color:#6ee7b7}
 .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
 .toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);
- display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+
+/* ================== HERO ================== */
+.hero{padding:42px 30px;margin-bottom:22px;border-radius:20px;position:relative;
+  overflow:hidden;background:var(--panel);border:1px solid var(--border);
+  backdrop-filter:blur(20px);animation:fadeUp .55s ease}
+.hero::before{content:'';position:absolute;top:-40%;right:-10%;width:60%;height:180%;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--accent) 45%,transparent),transparent);
+  filter:blur(40px);animation:float 8s ease-in-out infinite alternate}
+.hero::after{content:'';position:absolute;bottom:-40%;left:-10%;width:50%;height:160%;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--accent2) 40%,transparent),transparent);
+  filter:blur(40px);animation:float 9s ease-in-out infinite alternate-reverse}
+@keyframes float{from{transform:translate(0,0)}to{transform:translate(-30px,20px)}}
+.hero h1{position:relative;margin:0 0 10px;font-size:38px;font-weight:900;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:shine 6s linear infinite;background-size:200% auto}
+@keyframes shine{to{background-position:200% center}}
+.hero p{position:relative;margin:0 0 18px;color:var(--muted);font-size:15px;max-width:640px}
+.hero .cta{position:relative;display:flex;gap:10px;flex-wrap:wrap}
+.hero-stats{position:relative;display:flex;gap:22px;margin-top:24px;flex-wrap:wrap}
+.hero-stat b{display:block;font-size:22px;color:var(--text)}
+.hero-stat span{font-size:12px;color:var(--muted)}
+
+/* ================== MODAL ================== */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+  animation:fadeIn .2s}
 .modal-bg.on{display:flex}
-.modal{max-width:640px;width:100%;max-height:90vh;overflow:auto}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{max-width:680px;width:100%;max-height:90vh;overflow:auto;
+  animation:popIn .3s cubic-bezier(.2,1.2,.4,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.94) translateY(14px)}to{opacity:1;transform:none}}
 .modal h2{margin-top:0}
 .form-row{margin-bottom:10px;display:flex;flex-direction:column;gap:4px}
 label{font-size:12px;color:var(--muted)}
+
+/* ================== TOAST ================== */
 .toast{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:12px;
- background:rgba(124,92,255,.25);border:1px solid var(--border);backdrop-filter:blur(12px);
- z-index:200;box-shadow:0 0 30px rgba(124,92,255,.5);opacity:0;transition:.3s;pointer-events:none}
-.toast.on{opacity:1;transform:translateY(-4px)}
-.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);
- border-top-color:#fff;border-radius:50%;display:inline-block;animation:sp .8s linear infinite}
+  background:color-mix(in srgb,var(--accent) 25%,var(--panel));
+  border:1px solid var(--border);backdrop-filter:blur(12px);
+  z-index:200;box-shadow:0 0 30px color-mix(in srgb,var(--accent) 60%,transparent);
+  opacity:0;transition:.3s;pointer-events:none;transform:translateY(20px)}
+.toast.on{opacity:1;transform:translateY(0)}
+
+.spin{width:18px;height:18px;border:2px solid color-mix(in srgb,var(--text) 30%,transparent);
+  border-top-color:var(--text);border-radius:50%;display:inline-block;
+  animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .hidden{display:none!important}
 .status{position:fixed;bottom:16px;left:16px;padding:6px 12px;border-radius:10px;
- background:rgba(10,12,20,.7);border:1px solid var(--border);font-size:12px;color:var(--muted);
- backdrop-filter:blur(10px);z-index:150}
+  background:var(--panel);border:1px solid var(--border);font-size:12px;color:var(--muted);
+  backdrop-filter:blur(10px);z-index:150;transition:.3s}
 .status.ok{color:#6ee7b7;border-color:rgba(110,231,183,.4)}
 .status.bad{color:#fca5a5;border-color:rgba(252,165,165,.4)}
-</style></head><body>
+h3.section-title{margin:20px 0 12px;font-size:15px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1.2px}
+
+/* ================== PROFILE ================== */
+.profile-header{display:flex;gap:20px;align-items:center;flex-wrap:wrap;
+  padding:24px;margin-bottom:20px}
+.avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;font-weight:900;color:#fff;
+  box-shadow:0 0 30px color-mix(in srgb,var(--accent) 60%,transparent)}
+.profile-stats{display:flex;gap:20px;flex-wrap:wrap;margin-top:6px}
+.stat b{display:block;font-size:20px}
+.stat span{font-size:12px;color:var(--muted)}
+
+/* ================== ADMIN ================== */
+.admin-user{display:flex;gap:10px;align-items:center;padding:10px;
+  border-radius:12px;border:1px solid var(--border);margin-bottom:8px;
+  transition:.2s;flex-wrap:wrap}
+.admin-user:hover{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.admin-user .who{flex:1;min-width:160px}
+.admin-avatar{width:36px;height:36px;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;font-weight:700;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+
+/* ================== RESOURCE PAGE ================== */
+.res-hero{padding:0;overflow:hidden;margin-bottom:16px}
+.res-hero-banner{width:100%;height:260px;object-fit:cover;display:block}
+.res-hero-body{padding:20px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.res-hero-icon{width:96px;height:96px;border-radius:16px;object-fit:cover}
+
+/* ================== ANIMATIONS ================== */
+.grid > .card:nth-child(1){animation-delay:.02s}
+.grid > .card:nth-child(2){animation-delay:.04s}
+.grid > .card:nth-child(3){animation-delay:.06s}
+.grid > .card:nth-child(4){animation-delay:.08s}
+.grid > .card:nth-child(5){animation-delay:.10s}
+.grid > .card:nth-child(6){animation-delay:.12s}
+
+/* ================== SCROLLBAR ================== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--accent) 40%,transparent);
+  border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--accent) 65%,transparent)}
+</style>
+</head>
+<body>
 <header>
-  <div class="logo" onclick="go('mods')">WerticMods</div>
+  <div class="logo" onclick="go('home')">WerticMods</div>
   <nav>
+    <div class="tab" data-tab="home" onclick="go('home')">Главная</div>
     <div class="tab active" data-tab="mods" onclick="go('mods')">Моды</div>
     <div class="tab" data-tab="modpacks" onclick="go('modpacks')">Сборки</div>
-    <div class="tab" data-tab="mr" onclick="go('mr')">Modrinth</div>
-    <div class="tab" data-tab="mine" onclick="go('mine')">Мои ресурсы</div>
-    <div class="tab" data-tab="support" onclick="go('support')">Поддержка</div>
+    <div class="tab" data-tab="plugins" onclick="go('plugins')">Плагины</div>
+    <div class="tab" data-tab="maps" onclick="go('maps')">Карты</div>
+    <div class="tab" data-tab="resourcepacks" onclick="go('resourcepacks')">Ресурспаки</div>
+    <div class="tab" data-tab="datapacks" onclick="go('datapacks')">Датапаки</div>
+    <div class="tab" data-tab="mine" onclick="go('mine')">Моё</div>
+    <div class="tab" data-tab="support" onclick="go('support')">Помощь</div>
     <div class="tab hidden" id="adminTab" data-tab="admin" onclick="go('admin')">Админ</div>
   </nav>
+
+  <select id="versionSel" class="version-picker" onchange="setVersion(this.value)" title="Версия Minecraft">
+    <option value="">Все версии</option>
+    <option>1.21.4</option><option>1.21.3</option><option>1.21.1</option><option>1.21</option>
+    <option>1.20.6</option><option>1.20.4</option><option>1.20.2</option><option>1.20.1</option><option>1.20</option>
+    <option>1.19.4</option><option>1.19.2</option><option>1.18.2</option><option>1.17.1</option>
+    <option>1.16.5</option><option>1.12.2</option><option>1.8.9</option><option>1.7.10</option>
+  </select>
+
+  <div class="theme-picker" title="Тема">
+    <div class="theme-dot active" data-theme="dark" style="background:linear-gradient(135deg,#7c5cff,#22d3ee)" onclick="setTheme('dark')"></div>
+    <div class="theme-dot" data-theme="light" style="background:linear-gradient(135deg,#f0f0f8,#b0b8e0)" onclick="setTheme('light')"></div>
+    <div class="theme-dot" data-theme="midnight" style="background:linear-gradient(135deg,#00b8ff,#a855f7)" onclick="setTheme('midnight')"></div>
+    <div class="theme-dot" data-theme="forest" style="background:linear-gradient(135deg,#22c55e,#84cc16)" onclick="setTheme('forest')"></div>
+    <div class="theme-dot" data-theme="sunset" style="background:linear-gradient(135deg,#ff5c8a,#ffb84d)" onclick="setTheme('sunset')"></div>
+  </div>
+
   <div id="userBox"></div>
 </header>
 <main id="app"></main>
 
-<div class="modal-bg" id="authModal"><div class="card modal" style="max-width:380px">
+<div class="modal-bg" id="authModal"><div class="card modal" style="max-width:400px">
   <h2 id="authTitle">Вход</h2>
   <div class="form-row"><label>Ник</label><input id="authNick"/></div>
   <div class="form-row"><label>Пароль</label><input id="authPass" type="password"/></div>
   <div style="display:flex;gap:8px;margin-top:12px">
     <button class="primary" onclick="doAuth()">OK</button>
     <button onclick="toggleAuthMode()" id="authToggle">Регистрация</button>
-    <button onclick="closeAuth()">Отмена</button>
+    <button class="ghost" onclick="closeAuth()">Отмена</button>
   </div>
-  <p class="muted" style="margin-top:10px">Встроенный админ: <b>bdfka / bdfka</b></p>
+  <p class="muted" style="margin-top:10px">Админ по умолчанию: <b>bdfka / bdfka</b></p>
 </div></div>
 
 <div class="modal-bg" id="resModal"><div class="card modal" id="resBody"></div></div>
 <div class="toast" id="toast"></div>
-<div class="status" id="status">проверка сервера…</div>
+<div class="status" id="status">подключение…</div>
 
 <script>
-// ⬇⬇⬇ ВАЖНО: фронт на github.io, API всегда на localhost ⬇⬇⬇
 const API_BASE = 'http://127.0.0.1:5000';
 
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 let ME=null, AUTH_MODE='login', TAB='mods', ADMIN_USERS=[], CURRENT_RES_ID=null;
+let CURRENT_VERSION = localStorage.getItem('wm_version') || '';
 
+// ================== THEME ==================
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('wm_theme', t);
+  $$('.theme-dot').forEach(d=>d.classList.toggle('active', d.dataset.theme===t));
+}
+(function(){
+  const t = localStorage.getItem('wm_theme') || 'dark';
+  setTheme(t);
+})();
+
+// ================== VERSION ==================
+function setVersion(v){
+  CURRENT_VERSION = v;
+  localStorage.setItem('wm_version', v);
+  render();
+}
+(function(){
+  const s = $('#versionSel');
+  if(s && CURRENT_VERSION){ s.value = CURRENT_VERSION; }
+})();
+
+// ================== UTILS ==================
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');
   clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2400)}
 
@@ -129,57 +330,110 @@ function setStatus(ok,text){
 
 async function checkServer(){
   try{
-    const r=await fetch(API_BASE+'/api/health',{credentials:'include'});
+    const r=await fetch(API_BASE+'/api/health');
     const j=await r.json();
-    if(j.ok){ setStatus(true,'● сервер онлайн · v'+j.version); return true; }
-    setStatus(false,'● сервер не отвечает'); return false;
-  }catch(e){ setStatus(false,'● сервер офлайн (запусти app.py)'); return false; }
+    if(j.ok){ setStatus(true,'● онлайн · v'+j.version); return true; }
+    setStatus(false,'● не отвечает'); return false;
+  }catch(e){ setStatus(false,'● офлайн (запусти app.py)'); return false; }
 }
+
+function getToken(){ return localStorage.getItem('wm_token') || ''; }
+function setToken(t){ t ? localStorage.setItem('wm_token',t) : localStorage.removeItem('wm_token'); }
 
 async function api(url,opt={}){
-  opt.headers=Object.assign({'Content-Type':'application/json'},opt.headers||{});
-  if(opt.body&&typeof opt.body!=='string')opt.body=JSON.stringify(opt.body);
-  opt.credentials='include';
-  const r=await fetch(API_BASE+url,opt);
-  const j=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+  opt.headers = Object.assign({'Content-Type':'application/json'}, opt.headers||{});
+  const tok = getToken();
+  if(tok) opt.headers['Authorization'] = 'Bearer ' + tok;
+  if(opt.body && typeof opt.body !== 'string') opt.body = JSON.stringify(opt.body);
+  const r = await fetch(API_BASE+url, opt);
+  const j = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(j.error || ('HTTP '+r.status));
   return j;
 }
+
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+function avatarHTML(u,size=40){
+  if(u && u.avatar){
+    return `<img src="${esc(u.avatar)}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover" onerror="this.style.display='none'">`;
+  }
+  const letter = (u && u.nick ? u.nick[0] : '?').toUpperCase();
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:${size*0.45}px">${letter}</div>`;
+}
+
+// ================== AUTH ==================
 async function refreshMe(){
-  try{const j=await api('/api/me');ME=j.user}catch{ME=null}
-  const box=$('#userBox');
+  try{
+    const j = await api('/api/me');
+    ME = j.user;
+  }catch{ ME = null; }
+  const box = $('#userBox');
   if(ME){
-    box.innerHTML=`<span class="muted" style="margin-right:8px">${esc(ME.nick)}${ME.verified?' <span class="check">✔</span>':''}${ME.is_admin?' <span class="badge">admin</span>':''}</span>
-      <button onclick="logout()">Выйти</button>`;
-    $('#adminTab').classList.toggle('hidden',!ME.is_admin);
+    box.innerHTML = `<div style="display:flex;gap:8px;align-items:center">
+      <a href="#" onclick="event.preventDefault();openProfile('${esc(ME.nick)}')" style="display:flex;gap:8px;align-items:center;color:inherit;text-decoration:none">
+        ${avatarHTML(ME,32)}
+        <span style="font-size:14px">${esc(ME.nick)}${ME.verified?' <span class="check">✔</span>':''}${ME.is_admin?' <span class="badge">admin</span>':''}</span>
+      </a>
+      <button class="ghost" onclick="logout()">Выйти</button>
+    </div>`;
+    $('#adminTab').classList.toggle('hidden', !ME.is_admin);
   }else{
-    box.innerHTML=`<button class="primary" onclick="openAuth()">Войти</button>`;
+    box.innerHTML = `<button class="primary" onclick="openAuth()">Войти</button>`;
     $('#adminTab').classList.add('hidden');
-    if(TAB==='admin'||TAB==='mine')go('mods');
+    if(TAB==='admin'||TAB==='mine') go('home');
   }
 }
+
 function openAuth(){$('#authModal').classList.add('on')}
 function closeAuth(){$('#authModal').classList.remove('on')}
 function toggleAuthMode(){
-  AUTH_MODE=AUTH_MODE==='login'?'register':'login';
-  $('#authTitle').textContent=AUTH_MODE==='login'?'Вход':'Регистрация';
-  $('#authToggle').textContent=AUTH_MODE==='login'?'Регистрация':'Уже есть аккаунт';
+  AUTH_MODE = AUTH_MODE==='login' ? 'register' : 'login';
+  $('#authTitle').textContent = AUTH_MODE==='login' ? 'Вход' : 'Регистрация';
+  $('#authToggle').textContent = AUTH_MODE==='login' ? 'Регистрация' : 'Уже есть аккаунт';
 }
 async function doAuth(){
   try{
-    const nick=$('#authNick').value, pass=$('#authPass').value;
-    await api('/api/'+AUTH_MODE,{method:'POST',body:{nick,pass}});
-    closeAuth(); await refreshMe(); go(TAB); toast('OK');
-  }catch(e){toast(e.message)}
+    const nick = $('#authNick').value.trim();
+    const pass = $('#authPass').value;
+    const j = await api('/api/'+AUTH_MODE, {method:'POST', body:{nick,pass}});
+    if(j.token) setToken(j.token);
+    closeAuth();
+    await refreshMe();
+    render();
+    toast('Добро пожаловать, ' + nick);
+  }catch(e){ toast(e.message); }
 }
-async function logout(){await api('/api/logout',{method:'POST'});await refreshMe();go('mods')}
+async function logout(){
+  try{ await api('/api/logout', {method:'POST'}); }catch(e){}
+  setToken('');
+  await refreshMe();
+  go('home');
+}
 
-function go(t){TAB=t;CURRENT_RES_ID=null;$$('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));render()}
+// ================== NAVIGATION ==================
+function go(t){
+  TAB = t; CURRENT_RES_ID = null;
+  $$('.tab').forEach(x=>x.classList.toggle('active', x.dataset.tab===t));
+  window.scrollTo({top:0, behavior:'smooth'});
+  render();
+}
 
+function openProfile(nick){
+  TAB='profile'; CURRENT_PROFILE = nick; CURRENT_RES_ID=null;
+  $$('.tab').forEach(x=>x.classList.remove('active'));
+  render();
+}
+let CURRENT_PROFILE = null;
+
+async function openResource(id){
+  CURRENT_RES_ID = id; TAB='resource';
+  $$('.tab').forEach(x=>x.classList.remove('active'));
+  render();
+}
+
+// ================== RESOURCE FORM ==================
 const RES_FIELDS = [
-  ['name','Название *'],['type','Тип (mod / modpack) *'],['description','Описание'],
+  ['name','Название *'],['type','Тип *'],['description','Описание'],
   ['banner','Ссылка на шапку (баннер)'],['icon','Ссылка на иконку'],
   ['gallery','Галерея скриншотов (URL через ;)'],
   ['downloads','Ссылки на скачку (через ;)'],
@@ -189,17 +443,23 @@ const RES_FIELDS = [
   ['game_version','Версия игры'],['loader','Загрузчик (fabric/forge/...)']
 ];
 function resFormHTML(r={}){
+  const typeOpts = ['mod','modpack','plugin','map','resourcepack','datapack']
+    .map(t=>`<option value="${t}" ${r.type===t?'selected':''}>${t}</option>`).join('');
   return `<h2>${r.id?'Редактирование':'Публикация ресурса'}</h2>`+
    RES_FIELDS.map(([k,l])=>{
      let v=(r[k]??'').toString();
      if(k==='coauthors' && r.coauthors_list) v=r.coauthors_list.join(', ');
      if(k==='gallery' && r.gallery_list) v=r.gallery_list.join('; ');
+     if(k==='type'){
+       return `<div class="form-row"><label>${l}</label>
+         <select id="f_${k}">${typeOpts}</select></div>`;
+     }
      return `<div class="form-row"><label>${l}</label>
        <input id="f_${k}" value="${v.replace(/"/g,'&quot;')}"/></div>`;
    }).join('')+
    `<div style="display:flex;gap:8px;margin-top:12px">
       <button class="primary" onclick="saveRes(${r.id||0})">Сохранить</button>
-      <button onclick="closeRes()">Отмена</button>
+      <button class="ghost" onclick="closeRes()">Отмена</button>
     </div>`;
 }
 function openRes(r={}){$('#resBody').innerHTML=resFormHTML(r);$('#resModal').classList.add('on')}
@@ -218,17 +478,18 @@ async function delRes(id){
   catch(e){toast(e.message)}
 }
 
+// ================== RESOURCE CARD ==================
 function resCard(r,admin=false){
   const links=(r.downloads||'').split(';').filter(Boolean);
   return `<div class="card res" data-id="${r.id}" onclick="openResource(${r.id})">
     ${r.banner?`<img class="banner" src="${esc(r.banner)}" onerror="this.style.display='none'">`:''}
     <div class="row">
-      ${r.icon?`<img class="icon" src="${esc(r.icon)}" onerror="this.style.display='none'">`:''}
+      ${r.icon?`<img class="icon" src="${esc(r.icon)}" onerror="this.style.display='none'">`:avatarHTML({nick:r.name||'?'},42)}
       <div style="flex:1"><h3>${esc(r.name)} ${r.verified?'<span class="check">✔</span>':''}</h3>
         <div class="muted">от ${esc(r.nick||'?')} · ${esc(r.game_version||'—')} ${r.loader?'· '+esc(r.loader):''}</div>
       </div><span class="badge ${esc(r.type)}">${esc(r.type)}</span>
     </div>
-    <div class="muted">${esc((r.description||'').slice(0,220))}</div>
+    <div class="muted">${esc((r.description||'').slice(0,180))}</div>
     <div class="actions" onclick="event.stopPropagation()">
       <button class="primary" onclick="openResource(${r.id})">Открыть</button>
       ${links.length?`<button onclick="window.open('${esc(links[0].trim())}','_blank')">Скачать</button>`:''}
@@ -239,8 +500,116 @@ function resCard(r,admin=false){
   </div>`;
 }
 
-async function openResource(id){CURRENT_RES_ID=id;TAB='resource';$$('.tab').forEach(x=>x.classList.remove('active'));render()}
+// ================== HOME ==================
+async function renderHome(){
+  const app=$('#app');
+  let featured = [];
+  try {
+    const j = await api('/api/resources?q=');
+    featured = (j.resources||[]).slice(0,6);
+  } catch(e){}
 
+  let mrTrending = [];
+  try {
+    const j = await api('/api/modrinth/search?q=&type=mod' + (CURRENT_VERSION?('&version='+CURRENT_VERSION):''));
+    mrTrending = (j.hits||[]).slice(0,6);
+  } catch(e){}
+
+  app.innerHTML = `
+    <div class="hero">
+      <h1>WerticMods</h1>
+      <p>Твоя локальная платформа модов, сборок, плагинов и карт.
+      Ставь контент прямо в .minecraft, публикуй своё, следи за обновлениями Modrinth.</p>
+      <div class="cta">
+        <button class="primary" onclick="go('mods')">Изучить моды</button>
+        <button onclick="go('modpacks')">Сборки</button>
+        ${ME?`<button onclick="openRes()">+ Опубликовать</button>`:`<button onclick="openAuth()">Создать аккаунт</button>`}
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><b>6</b><span>Разделов</span></div>
+        <div class="hero-stat"><b>100%</b><span>Modrinth API</span></div>
+        <div class="hero-stat"><b>${CURRENT_VERSION||'все'}</b><span>Версия MC</span></div>
+        <div class="hero-stat"><b>1 клик</b><span>Установка</span></div>
+      </div>
+    </div>
+
+    ${featured.length?`
+      <h3 class="section-title">Свежие публикации сообщества</h3>
+      <div class="grid">${featured.map(r=>resCard(r)).join('')}</div>
+    `:`
+      <h3 class="section-title">Свежих публикаций пока нет</h3>
+      <div class="muted">${ME?'Опубликуй первый ресурс!':'Войди, чтобы публиковать.'}</div>
+    `}
+
+    ${mrTrending.length?`
+      <h3 class="section-title" style="margin-top:30px">Тренды Modrinth ${CURRENT_VERSION?'· '+CURRENT_VERSION:''}</h3>
+      <div class="grid">${mrTrending.map(h=>mrCard(h)).join('')}</div>
+    `:''}
+  `;
+}
+
+function mrCard(h){
+  return `<div class="card res">
+    ${h.gallery&&h.gallery[0]?`<img class="banner" src="${esc(h.gallery[0])}" onerror="this.style.display='none'">`:''}
+    <div class="row">
+      ${h.icon_url?`<img class="icon" src="${esc(h.icon_url)}">`:''}
+      <div style="flex:1"><h3>${esc(h.title)}</h3>
+        <div class="muted">⬇ ${h.downloads} · ${esc(h.author||'')}</div></div>
+    </div>
+    <div class="muted">${esc((h.description||'').slice(0,150))}</div>
+    <div class="actions">
+      <button class="primary" onclick="mrInstall('${h.project_id}','mod')">Установить</button>
+      <button onclick="window.open('https://modrinth.com/project/${h.slug}','_blank')">Открыть</button>
+    </div>
+  </div>`;
+}
+
+// ================== PROFILE ==================
+async function renderProfile(){
+  const app=$('#app');
+  const nick = CURRENT_PROFILE;
+  try {
+    const j = await api('/api/users/'+encodeURIComponent(nick));
+    const u = j.user;
+    const res = j.resources || [];
+    const isMe = ME && ME.nick === u.nick;
+    app.innerHTML = `
+      <div class="card profile-header">
+        ${avatarHTML(u, 88)}
+        <div style="flex:1;min-width:220px">
+          <h1 style="margin:0 0 4px">${esc(u.nick)} ${u.verified?'<span class="check">✔</span>':''}
+            ${u.is_admin?'<span class="badge">admin</span>':''}</h1>
+          <div class="muted">${esc(u.bio||'Без описания')}</div>
+          <div class="profile-stats">
+            <div class="stat"><b>${res.length}</b><span>публикаций</span></div>
+            <div class="stat"><b>${new Date(u.created).toLocaleDateString('ru')}</b><span>с нами</span></div>
+          </div>
+        </div>
+        ${isMe?`<button onclick="editMe()">Редактировать профиль</button>`:''}
+      </div>
+
+      <h3 class="section-title">Публикации</h3>
+      ${res.length ? `<div class="grid">${res.map(r=>resCard(r)).join('')}</div>`
+        : `<div class="muted">Пока пусто</div>`}
+    `;
+  } catch(e){
+    app.innerHTML='<div class="muted">Профиль не найден: '+esc(e.message)+'</div>';
+  }
+}
+
+async function editMe(){
+  const u = ME;
+  const avatar = prompt('Ссылка на аватар:', u.avatar||'');
+  if(avatar===null) return;
+  const bio = prompt('Описание профиля:', u.bio||'');
+  if(bio===null) return;
+  try{
+    await api('/api/me',{method:'PUT',body:{avatar,bio}});
+    await refreshMe(); toast('Профиль обновлён'); render();
+  }catch(e){toast(e.message)}
+}
+
+// ================== RESOURCE PAGE ==================
 async function renderResource(){
   const app=$('#app');
   try{
@@ -251,43 +620,47 @@ async function renderResource(){
     const isOwner = ME && (ME.id===r.author_id || ME.is_admin);
     app.innerHTML=`
       <div class="toolbar">
-        <button onclick="go('${r.type==='modpack'?'modpacks':'mods'}')">← Назад</button>
+        <button class="ghost" onclick="history.length?history.back():go('home')">← Назад</button>
         ${isOwner?`<button onclick='openRes(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Редактировать</button>`:''}
-        ${isOwner?`<button class="danger" onclick="delRes(${r.id}).then(()=>go('mods'))">Удалить</button>`:''}
+        ${isOwner?`<button class="danger" onclick="delRes(${r.id}).then(()=>go('home'))">Удалить</button>`:''}
       </div>
-      <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px">
-        ${r.banner?`<img src="${esc(r.banner)}" style="width:100%;height:260px;object-fit:cover;display:block" onerror="this.style.display='none'">`:''}
-        <div style="padding:20px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
-          ${r.icon?`<img src="${esc(r.icon)}" style="width:96px;height:96px;border-radius:16px;object-fit:cover" onerror="this.style.display='none'">`:''}
+
+      <div class="card res-hero">
+        ${r.banner?`<img class="res-hero-banner" src="${esc(r.banner)}" onerror="this.style.display='none'">`:''}
+        <div class="res-hero-body">
+          ${r.icon?`<img class="res-hero-icon" src="${esc(r.icon)}" onerror="this.style.display='none'">`:avatarHTML({nick:r.name||'?'},96)}
           <div style="flex:1;min-width:240px">
             <h1 style="margin:0 0 6px">${esc(r.name)}</h1>
-            <div class="muted" style="margin-bottom:10px">
+            <div class="muted" style="margin-bottom:12px">
               <span class="badge ${esc(r.type)}">${esc(r.type)}</span>
               ${r.game_version?` · <b>${esc(r.game_version)}</b>`:''}
               ${r.loader?` · ${esc(r.loader)}`:''} · ID ${r.id}
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:8px">
-              ${links.map((l,i)=>`<button class="primary" onclick="window.open('${esc(l.trim())}','_blank')">⬇ Скачать ${i+1}</button>`).join('')}
+              ${links.map((l,i)=>`<button class="primary" onclick="window.open('${esc(l.trim())}','_blank')">⬇ Скачать ${i+1}</button>`).join('')||'<span class="muted">Нет ссылок на скачивание</span>'}
             </div>
           </div>
         </div>
       </div>
+
       <div class="grid" style="grid-template-columns:2fr 1fr">
         <div class="card">
           <h3>Описание</h3>
-          <div style="white-space:pre-wrap;line-height:1.55">${esc(r.description||'—')}</div>
+          <div style="white-space:pre-wrap;line-height:1.6">${esc(r.description||'—')}</div>
           ${r.gallery_list&&r.gallery_list.length?`
             <h3 style="margin-top:18px">Галерея</h3>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">
-              ${r.gallery_list.map(g=>`<img src="${esc(g)}" style="width:100%;border-radius:10px;cursor:pointer"
-                onerror="this.style.display='none'" onclick="window.open('${esc(g)}','_blank')">`).join('')}
+              ${r.gallery_list.map(g=>`<img src="${esc(g)}" style="width:100%;border-radius:10px;cursor:pointer;transition:.3s"
+                onerror="this.style.display='none'" onmouseover="this.style.transform='scale(1.04)'"
+                onmouseout="this.style.transform=''"
+                onclick="window.open('${esc(g)}','_blank')">`).join('')}
             </div>`:''}
         </div>
         <div>
           <div class="card" style="margin-bottom:12px">
             <h3>Автор</h3>
-            <div style="display:flex;gap:10px;align-items:center">
-              <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2))"></div>
+            <div style="display:flex;gap:10px;align-items:center;cursor:pointer" onclick="openProfile('${esc(r.author_nick)}')">
+              ${avatarHTML({nick:r.author_nick,avatar:r.author_avatar},40)}
               <div><b>${esc(r.author_nick)}</b> ${r.author_verified?'<span class="check">✔</span>':''}
                 <div class="muted">владелец</div></div>
             </div>
@@ -296,8 +669,8 @@ async function renderResource(){
           <div class="card" style="margin-bottom:12px">
             <h3>Соавторы</h3>
             ${r.coauthors_details.map(c=>`
-              <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
-                <div style="width:32px;height:32px;border-radius:50%;background:rgba(124,92,255,.35)"></div>
+              <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;cursor:pointer" onclick="openProfile('${esc(c.nick)}')">
+                ${avatarHTML(c,32)}
                 <div><b>${esc(c.nick)}</b> ${c.verified?'<span class="check">✔</span>':''}</div>
               </div>`).join('')}
           </div>`:''}
@@ -314,98 +687,79 @@ async function renderResource(){
   }catch(e){$('#app').innerHTML='<div class="muted">Ошибка: '+esc(e.message)+'</div>'}
 }
 
-async function render(){
-  const app=$('#app'); app.innerHTML='<div class="spin"></div>';
-  try{
-    if(TAB==='resource' && CURRENT_RES_ID){ return renderResource(); }
-    if(TAB==='mods'||TAB==='modpacks'){
-      const type=TAB==='mods'?'mod':'modpack';
-      const q=sessionStorage['q_'+TAB]||'';
-      const j=await api(`/api/resources?type=${type}&q=${encodeURIComponent(q)}`);
-      app.innerHTML=`
-        <div class="toolbar">
-          <input id="q" placeholder="Поиск ${type==='mod'?'модов':'сборок'}..." value="${esc(q)}" style="max-width:340px"/>
-          <button onclick="doSearch('${TAB}')">Найти</button>
-          ${ME?`<button class="primary" onclick="openRes({type:'${type}'})">+ Опубликовать</button>`:''}
-        </div>
-        <div class="grid">${j.resources.length?j.resources.map(r=>resCard(r)).join(''):'<div class="muted">Пусто</div>'}</div>`;
-      $('#q').onkeydown=e=>{if(e.key==='Enter')doSearch(TAB)};
-    }
-    else if(TAB==='mine'){
-      if(!ME)return go('mods');
-      const j=await api('/api/resources?q=');
-      const mine=j.resources.filter(r=>r.author_id===ME.id);
-      app.innerHTML=`<div class="toolbar"><h2 style="margin:0">Мои ресурсы</h2>
-        <button class="primary" onclick="openRes()">+ Новый</button></div>
-        <div class="grid">${mine.length?mine.map(r=>resCard(r)).join(''):'<div class="muted">Пока пусто</div>'}</div>`;
-    }
-    else if(TAB==='mr'){
-      app.innerHTML=`
-        <div class="toolbar">
-          <input id="mrq" placeholder="Поиск в Modrinth..." style="max-width:420px"/>
-          <select id="mrt" style="max-width:180px">
-            <option value="mod">Моды</option><option value="modpack">Сборки</option>
-            <option value="shader">Шейдеры</option><option value="resourcepack">Ресурспаки</option>
-          </select>
-          <button class="primary" onclick="mrSearch()">Искать</button>
-          <button onclick="mrPopular()">Популярное</button>
-        </div>
-        <div class="grid" id="mrGrid"><div class="muted">Введите запрос</div></div>`;
-      $('#mrq').onkeydown=e=>{if(e.key==='Enter')mrSearch()};
-      mrPopular();
-    }
-    else if(TAB==='support'){
-      const j=ME?await api('/api/tickets'):{tickets:[]};
-      app.innerHTML=`
-        ${ME?`<div class="card" style="margin-bottom:16px">
-          <h3>Новое обращение</h3>
-          <textarea id="tkmsg" rows="3" placeholder="Опишите проблему..."></textarea>
-          <div style="margin-top:8px"><button class="primary" onclick="sendTicket()">Отправить</button></div>
-        </div>`:'<div class="muted">Войдите, чтобы писать в поддержку</div>'}
-        <div class="grid">${j.tickets.map(t=>`<div class="card">
-          <div style="display:flex;gap:8px;align-items:center"><span class="badge">${esc(t.status)}</span>
-            <span class="muted">#${t.id} ${t.nick?'от '+esc(t.nick):''}</span></div>
-          <div style="margin:8px 0">${esc(t.message)}</div>
-          ${t.answer?`<div class="card" style="background:rgba(34,211,238,.08)"><b>Ответ:</b> ${esc(t.answer)}</div>`:''}
-          ${ME&&ME.is_admin&&t.status!=='closed'?
-            `<textarea id="ans_${t.id}" rows="2" placeholder="Ответ..."></textarea>
-             <div style="margin-top:6px"><button onclick="answerTicket(${t.id})">Ответить</button></div>`:''}
-        </div>`).join('')}</div>`;
-    }
-    else if(TAB==='admin'){
-      if(!ME||!ME.is_admin)return go('mods');
-      ADMIN_USERS=(await api('/api/admin/users')).users;
-      const res=(await api('/api/resources?q=')).resources;
-      app.innerHTML=`
-        <h2>Админ панель</h2><h3>Пользователи</h3>
-        <div class="grid">${ADMIN_USERS.map(u=>`<div class="card">
-          <div style="display:flex;gap:8px;align-items:center"><b>${esc(u.nick)}</b>
-            ${u.is_admin?'<span class="badge">admin</span>':''}
-            ${u.verified?'<span class="check">✔</span>':''}</div>
-          <div class="muted">ID ${u.id} · ${esc(u.created)}</div>
-          <div class="actions">
-            <button onclick="toggleVerify(${u.id},${u.verified?0:1})">${u.verified?'Снять галочку':'Выдать галочку'}</button>
-            <button onclick="toggleAdmin(${u.id},${u.is_admin?0:1})">${u.is_admin?'Снять админа':'Сделать админом'}</button>
-          </div></div>`).join('')}</div>
-        <h3 style="margin-top:22px">Все ресурсы</h3>
-        <div class="grid">${res.map(r=>resCard(r,true)).join('')}</div>`;
-    }
-  }catch(e){app.innerHTML='<div class="muted">Ошибка: '+esc(e.message)+'</div>'}
+// ================== MODRINTH SECTIONS ==================
+const MR_SECTIONS = ['mods','modpacks','plugins','maps','resourcepacks','datapacks'];
+const MR_TYPE_MAP = {
+  mods:'mod', modpacks:'modpack', plugins:'plugin',
+  maps:'map', resourcepacks:'resourcepack', datapacks:'datapack'
+};
+const MR_TITLES = {
+  mods:'Моды', modpacks:'Сборки', plugins:'Плагины',
+  maps:'Карты', resourcepacks:'Ресурспаки', datapacks:'Датапаки'
+};
+
+async function renderMrSection(tab){
+  const app=$('#app');
+  const mrType = MR_TYPE_MAP[tab];
+  const q = sessionStorage['mrq_'+tab] || '';
+
+  let localRes = [];
+  try {
+    const j = await api(`/api/resources?type=${mrType}&q=${encodeURIComponent(q)}`);
+    localRes = j.resources || [];
+  } catch(e) {}
+
+  app.innerHTML = `
+    <div class="toolbar">
+      <input id="mrq_${tab}" placeholder="Поиск в ${MR_TITLES[tab].toLowerCase()}..." value="${esc(q)}" style="max-width:340px"/>
+      <button class="primary" onclick="doSearchMr('${tab}')">Найти</button>
+      <button onclick="mrPopular('${tab}')">Популярное</button>
+      ${ME?`<button onclick="openRes({type:'${mrType}'})">+ Опубликовать</button>`:''}
+    </div>
+
+    ${localRes.length ? `
+      <h3 class="section-title">От сообщества</h3>
+      <div class="grid" style="margin-bottom:24px">${localRes.map(r=>resCard(r)).join('')}</div>
+    ` : ''}
+
+    <h3 class="section-title">Из Modrinth ${CURRENT_VERSION?'· '+CURRENT_VERSION:''}</h3>
+    <div class="grid" id="mrGrid"><div class="spin"></div></div>
+  `;
+
+  document.getElementById('mrq_'+tab).onkeydown = e => { if(e.key==='Enter') doSearchMr(tab); };
+
+  try {
+    let url = `/api/modrinth/search?q=${encodeURIComponent(q)}&type=${mrType}`;
+    if(CURRENT_VERSION) url += '&version='+encodeURIComponent(CURRENT_VERSION);
+    const j = await api(url);
+    mrRender(j.hits || [], mrType);
+  } catch(e) {
+    document.getElementById('mrGrid').innerHTML = '<div class="muted">Ошибка Modrinth: '+esc(e.message)+'</div>';
+  }
 }
 
-function doSearch(tab){sessionStorage['q_'+tab]=$('#q').value;render()}
+function doSearchMr(tab){
+  const q = document.getElementById('mrq_'+tab).value;
+  sessionStorage['mrq_'+tab] = q;
+  render();
+}
 
-async function mrSearch(){
-  const q=$('#mrq').value, t=$('#mrt').value;
-  $('#mrGrid').innerHTML='<div class="spin"></div>';
-  try{ mrRender((await api(`/api/modrinth/search?q=${encodeURIComponent(q)}&type=${t}`)).hits||[]); }
-  catch(e){$('#mrGrid').innerHTML='<div class="muted">'+esc(e.message)+'</div>'}
+async function mrPopular(tab){
+  try {
+    let url = `/api/modrinth/search?q=&type=${MR_TYPE_MAP[tab]}`;
+    if(CURRENT_VERSION) url += '&version='+encodeURIComponent(CURRENT_VERSION);
+    const j = await api(url);
+    mrRender(j.hits || [], MR_TYPE_MAP[tab]);
+  } catch(e) {
+    const g = document.getElementById('mrGrid');
+    if(g) g.innerHTML = '<div class="muted">'+esc(e.message)+'</div>';
+  }
 }
-async function mrPopular(){
-  try{ mrRender((await api(`/api/modrinth/search?q=&type=mod`)).hits||[]); }catch(e){}
-}
-function mrRender(hits){
-  $('#mrGrid').innerHTML=hits.length?hits.map(h=>`
+
+function mrRender(hits, mrType){
+  const g = document.getElementById('mrGrid');
+  if(!g) return;
+  g.innerHTML = hits.length ? hits.map(h=>`
     <div class="card res">
       ${h.gallery&&h.gallery[0]?`<img class="banner" src="${esc(h.gallery[0])}" onerror="this.style.display='none'">`:''}
       <div class="row">
@@ -413,14 +767,15 @@ function mrRender(hits){
         <div style="flex:1"><h3>${esc(h.title)}</h3>
           <div class="muted">⬇ ${h.downloads} · ${esc(h.author||'')}</div></div>
       </div>
-      <div class="muted">${esc(h.description||'')}</div>
+      <div class="muted">${esc((h.description||'').slice(0,160))}</div>
       <div class="actions">
-        <button class="primary" onclick="mrInstall('${h.project_id}')">Установить</button>
+        <button class="primary" onclick="mrInstall('${h.project_id}','${mrType}')">Установить</button>
         <button onclick="window.open('https://modrinth.com/project/${h.slug}','_blank')">Открыть</button>
       </div>
-    </div>`).join(''):'<div class="muted">Ничего не найдено</div>';
+    </div>`).join('') : '<div class="muted">Ничего не найдено</div>';
 }
-async function mrInstall(pid){
+
+async function mrInstall(pid, rtype){
   try{
     const versions=await api('/api/modrinth/versions/'+pid);
     if(!versions.length)return toast('Нет версий');
@@ -434,14 +789,14 @@ async function mrInstall(pid){
         </select></div>
       <div class="form-row"><label>Куда ставить?</label>
         <select id="target">
-          <option value="">.minecraft/mods (глобально)</option>
-          <option value="__custom__">.minecraft/versions/&lt;версия&gt;/mods</option>
+          <option value="">.minecraft/${rtype==='mod'?'mods':rtype+'s'} (глобально)</option>
+          <option value="__custom__">.minecraft/versions/&lt;версия&gt;/…</option>
         </select></div>
       <div class="form-row hidden" id="verRow"><label>Название папки версии</label>
-        <input id="verName" placeholder="например MyPack-1.20.4"/></div>
+        <input id="verName" placeholder="например MyPack-1.20.4" value="${CURRENT_VERSION||''}"/></div>
       <div style="display:flex;gap:8px;margin-top:12px">
         <button class="primary" id="goBtn">Скачать</button>
-        <button onclick="this.closest('.modal-bg').remove()">Отмена</button>
+        <button class="ghost" onclick="this.closest('.modal-bg').remove()">Отмена</button>
       </div>
     </div>`;
     document.body.appendChild(modal);
@@ -453,7 +808,7 @@ async function mrInstall(pid){
       const version=tSel.value==='__custom__'?(modal.querySelector('#verName').value.trim()||'custom'):'';
       try{
         const r=await api('/api/modrinth/install',{method:'POST',body:{
-          url:file.url,filename:file.filename,version
+          url:file.url,filename:file.filename,version,type:rtype
         }});
         toast('Скачано: '+r.path);
         modal.remove();
@@ -461,6 +816,43 @@ async function mrInstall(pid){
     };
   }catch(e){toast(e.message)}
 }
+
+// ================== MINE ==================
+async function renderMine(){
+  const app=$('#app');
+  if(!ME){ go('home'); return; }
+  const j = await api('/api/resources?author='+encodeURIComponent(ME.nick));
+  const mine = j.resources || [];
+  app.innerHTML=`
+    <div class="toolbar">
+      <h2 style="margin:0">Мои публикации</h2>
+      <button class="primary" onclick="openRes()">+ Новый ресурс</button>
+    </div>
+    <div class="grid">${mine.length?mine.map(r=>resCard(r,true)).join(''):'<div class="muted">Пока пусто. Опубликуй первый ресурс!</div>'}</div>
+  `;
+}
+
+// ================== SUPPORT ==================
+async function renderSupport(){
+  const app=$('#app');
+  const j = ME ? await api('/api/tickets') : {tickets:[]};
+  app.innerHTML=`
+    ${ME?`<div class="card" style="margin-bottom:16px">
+      <h3>Новое обращение</h3>
+      <textarea id="tkmsg" rows="3" placeholder="Опишите проблему..."></textarea>
+      <div style="margin-top:8px"><button class="primary" onclick="sendTicket()">Отправить</button></div>
+    </div>`:'<div class="muted">Войдите, чтобы писать в поддержку</div>'}
+    <div class="grid">${j.tickets.map(t=>`<div class="card">
+      <div style="display:flex;gap:8px;align-items:center"><span class="badge">${esc(t.status)}</span>
+        <span class="muted">#${t.id} ${t.nick?'от '+esc(t.nick):''}</span></div>
+      <div style="margin:8px 0">${esc(t.message)}</div>
+      ${t.answer?`<div class="card" style="background:color-mix(in srgb,var(--accent2) 10%,transparent)"><b>Ответ:</b> ${esc(t.answer)}</div>`:''}
+      ${ME&&ME.is_admin&&t.status!=='closed'?
+        `<textarea id="ans_${t.id}" rows="2" placeholder="Ответ..."></textarea>
+         <div style="margin-top:6px"><button onclick="answerTicket(${t.id})">Ответить</button></div>`:''}
+    </div>`).join('')}</div>`;
+}
+
 async function sendTicket(){
   try{await api('/api/tickets',{method:'POST',body:{message:$('#tkmsg').value}});
     toast('Отправлено');render()}catch(e){toast(e.message)}
@@ -469,14 +861,66 @@ async function answerTicket(id){
   try{await api(`/api/tickets/${id}/answer`,{method:'POST',body:{answer:$('#ans_'+id).value}});
     toast('Ответ отправлен');render()}catch(e){toast(e.message)}
 }
+
+// ================== ADMIN ==================
+async function renderAdmin(){
+  const app=$('#app');
+  if(!ME||!ME.is_admin){ go('home'); return; }
+  ADMIN_USERS = (await api('/api/admin/users')).users;
+  const res = (await api('/api/resources?q=')).resources;
+
+  app.innerHTML=`
+    <h2>Админ-панель</h2>
+    <h3 class="section-title">Пользователи (${ADMIN_USERS.length})</h3>
+    <div class="card">
+      ${ADMIN_USERS.map(u=>`
+        <div class="admin-user">
+          <div class="admin-avatar">${esc((u.nick[0]||'?').toUpperCase())}</div>
+          <div class="who">
+            <b>${esc(u.nick)}</b>
+            ${u.is_admin?'<span class="badge">admin</span>':''}
+            ${u.verified?'<span class="check">✔</span>':''}
+            <div class="muted">ID ${u.id} · ${esc(u.created)}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button onclick="toggleVerify(${u.id},${u.verified?0:1})">${u.verified?'Снять ✔':'Выдать ✔'}</button>
+            <button onclick="toggleAdmin(${u.id},${u.is_admin?0:1})">${u.is_admin?'Снять админку':'Выдать админку'}</button>
+          </div>
+        </div>`).join('')}
+    </div>
+    <h3 class="section-title" style="margin-top:22px">Все публикации (${res.length})</h3>
+    <div class="grid">${res.length?res.map(r=>resCard(r,true)).join(''):'<div class="muted">Нет публикаций</div>'}</div>
+  `;
+}
+
 async function toggleVerify(id,v){await api('/api/admin/verify/'+id,{method:'POST',body:{verified:v}});render()}
 async function toggleAdmin(id,v){await api('/api/admin/makeadmin/'+id,{method:'POST',body:{admin:v}});render()}
 
+// ================== RENDER ==================
+async function render(){
+  const app=$('#app');
+  app.innerHTML='<div class="spin" style="margin:40px auto;display:block"></div>';
+  try{
+    if(TAB==='home') return renderHome();
+    if(TAB==='resource' && CURRENT_RES_ID) return renderResource();
+    if(TAB==='profile' && CURRENT_PROFILE) return renderProfile();
+    if(MR_SECTIONS.includes(TAB)) return renderMrSection(TAB);
+    if(TAB==='mine') return renderMine();
+    if(TAB==='support') return renderSupport();
+    if(TAB==='admin') return renderAdmin();
+  }catch(e){
+    app.innerHTML='<div class="muted">Ошибка: '+esc(e.message)+'</div>';
+  }
+}
+
+// ================== INIT ==================
 (async()=>{
   await checkServer();
   await refreshMe();
+  if(!TAB) TAB='home';
   render();
-  setInterval(checkServer, 10000); // проверяем сервер каждые 10 секунд
+  setInterval(checkServer, 10000);
 })();
 </script>
-</body></html>
+</body>
+</html>
