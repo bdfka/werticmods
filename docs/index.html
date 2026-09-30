@@ -42,8 +42,31 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;
     radial-gradient(500px 400px at 50% 50%,var(--bg3),transparent 70%);
   filter:blur(10px);transition:background .35s ease}
 
+/* ================== КАСТОМНАЯ ШАПКА ОКНА ================== */
+.titlebar{
+  height:38px;display:flex;align-items:center;gap:10px;padding:0 12px;
+  background:var(--panel);border-bottom:1px solid var(--border);
+  backdrop-filter:blur(16px);-webkit-app-region:drag;
+  user-select:none;position:sticky;top:0;z-index:50;
+}
+.titlebar .tb-logo{
+  font-weight:800;font-size:14px;letter-spacing:.4px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;background-clip:text;color:transparent;padding-left:2px;
+}
+.titlebar .tb-spacer{flex:1}
+.titlebar .tb-btn{
+  width:34px;height:26px;display:flex;align-items:center;justify-content:center;
+  border-radius:8px;cursor:pointer;color:var(--muted);transition:.18s;
+  -webkit-app-region:no-drag;background:transparent;border:none;padding:0;
+}
+.titlebar .tb-btn:hover{background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--text)}
+.titlebar .tb-btn.close:hover{background:#e11d48;color:#fff}
+body:not(.in-app) .titlebar .tb-controls{display:none}
+body.in-app .titlebar .tb-controls{display:flex;gap:2px}
+
 /* ================== HEADER ================== */
-header{position:sticky;top:0;z-index:20;backdrop-filter:blur(16px);
+header{position:sticky;top:38px;z-index:20;backdrop-filter:blur(16px);
   background:var(--panel);border-bottom:1px solid var(--border);
   padding:10px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .logo{font-weight:900;font-size:20px;letter-spacing:.5px;
@@ -220,15 +243,6 @@ h3.section-title{margin:20px 0 12px;font-size:15px;color:var(--muted);
 .res-hero-body{padding:20px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
 .res-hero-icon{width:96px;height:96px;border-radius:16px;object-fit:cover}
 
-/* ================== ANIMATIONS ================== */
-.grid > .card:nth-child(1){animation-delay:.02s}
-.grid > .card:nth-child(2){animation-delay:.04s}
-.grid > .card:nth-child(3){animation-delay:.06s}
-.grid > .card:nth-child(4){animation-delay:.08s}
-.grid > .card:nth-child(5){animation-delay:.10s}
-.grid > .card:nth-child(6){animation-delay:.12s}
-
-/* ================== SCROLLBAR ================== */
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--accent) 40%,transparent);
@@ -237,6 +251,24 @@ h3.section-title{margin:20px 0 12px;font-size:15px;color:var(--muted);
 </style>
 </head>
 <body>
+
+<!-- ================== КАСТОМНАЯ ШАПКА ОКНА ================== -->
+<div class="titlebar">
+  <div class="tb-logo">WerticMods</div>
+  <div class="tb-spacer"></div>
+  <div class="tb-controls">
+    <button class="tb-btn" title="Свернуть" onclick="winMinimize()">
+      <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="5.5" width="10" height="1" fill="currentColor"/></svg>
+    </button>
+    <button class="tb-btn" title="Развернуть" onclick="winMaximize()">
+      <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1.5" y="1.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+    </button>
+    <button class="tb-btn close" title="Закрыть" onclick="winClose()">
+      <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 2 L10 10 M10 2 L2 10" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>
+    </button>
+  </div>
+</div>
+
 <header>
   <div class="logo" onclick="go('home')">WerticMods</div>
   <nav>
@@ -294,31 +326,50 @@ const API_BASE = 'http://127.0.0.1:5000';
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 let ME=null, AUTH_MODE='login', TAB='mods', ADMIN_USERS=[], CURRENT_RES_ID=null;
+let CURRENT_PROFILE = null;
 let CURRENT_VERSION = localStorage.getItem('wm_version') || '';
 
-// ================== THEME ==================
+// ================== ТЕМА ==================
 function setTheme(t){
   document.documentElement.setAttribute('data-theme', t);
-  localStorage.setItem('wm_theme', t);
+  try { localStorage.setItem('wm_theme', t); } catch(e){}
   $$('.theme-dot').forEach(d=>d.classList.toggle('active', d.dataset.theme===t));
 }
 (function(){
-  const t = localStorage.getItem('wm_theme') || 'dark';
+  let t = 'dark';
+  try { t = localStorage.getItem('wm_theme') || 'dark'; } catch(e){}
   setTheme(t);
 })();
 
-// ================== VERSION ==================
+// ================== ВЕРСИЯ ==================
 function setVersion(v){
   CURRENT_VERSION = v;
-  localStorage.setItem('wm_version', v);
+  try { localStorage.setItem('wm_version', v); } catch(e){}
   render();
 }
 (function(){
   const s = $('#versionSel');
-  if(s && CURRENT_VERSION){ s.value = CURRENT_VERSION; }
+  if(s && CURRENT_VERSION) s.value = CURRENT_VERSION;
 })();
 
-// ================== UTILS ==================
+// ================== ОКНО ==================
+function winMinimize(){ if(window.pywebview && window.pywebview.api) window.pywebview.api.minimize(); }
+function winMaximize(){ if(window.pywebview && window.pywebview.api) window.pywebview.api.toggle_maximize(); }
+function winClose(){ if(window.pywebview && window.pywebview.api) window.pywebview.api.close(); else window.close(); }
+
+// ================== TOKEN ==================
+let _memToken = '';
+function getToken(){
+  try { return localStorage.getItem('wm_token') || _memToken || ''; }
+  catch(e){ return _memToken || ''; }
+}
+function setToken(t){
+  _memToken = t || '';
+  try { t ? localStorage.setItem('wm_token', t) : localStorage.removeItem('wm_token'); }
+  catch(e){ /* fallback to memory */ }
+}
+
+// ================== UTIL ==================
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');
   clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2400)}
 
@@ -336,9 +387,6 @@ async function checkServer(){
     setStatus(false,'● не отвечает'); return false;
   }catch(e){ setStatus(false,'● офлайн (запусти app.py)'); return false; }
 }
-
-function getToken(){ return localStorage.getItem('wm_token') || ''; }
-function setToken(t){ t ? localStorage.setItem('wm_token',t) : localStorage.removeItem('wm_token'); }
 
 async function api(url,opt={}){
   opt.headers = Object.assign({'Content-Type':'application/json'}, opt.headers||{});
@@ -366,7 +414,7 @@ async function refreshMe(){
   try{
     const j = await api('/api/me');
     ME = j.user;
-  }catch{ ME = null; }
+  }catch(e){ ME = null; }
   const box = $('#userBox');
   if(ME){
     box.innerHTML = `<div style="display:flex;gap:8px;align-items:center">
@@ -380,7 +428,6 @@ async function refreshMe(){
   }else{
     box.innerHTML = `<button class="primary" onclick="openAuth()">Войти</button>`;
     $('#adminTab').classList.add('hidden');
-    if(TAB==='admin'||TAB==='mine') go('home');
   }
 }
 
@@ -406,6 +453,7 @@ async function doAuth(){
 async function logout(){
   try{ await api('/api/logout', {method:'POST'}); }catch(e){}
   setToken('');
+  ME = null;
   await refreshMe();
   go('home');
 }
@@ -423,7 +471,6 @@ function openProfile(nick){
   $$('.tab').forEach(x=>x.classList.remove('active'));
   render();
 }
-let CURRENT_PROFILE = null;
 
 async function openResource(id){
   CURRENT_RES_ID = id; TAB='resource';
@@ -503,22 +550,11 @@ function resCard(r,admin=false){
 // ================== HOME ==================
 async function renderHome(){
   const app=$('#app');
-  let featured = [];
-  try {
-    const j = await api('/api/resources?q=');
-    featured = (j.resources||[]).slice(0,6);
-  } catch(e){}
-
-  let mrTrending = [];
-  try {
-    const j = await api('/api/modrinth/search?q=&type=mod' + (CURRENT_VERSION?('&version='+CURRENT_VERSION):''));
-    mrTrending = (j.hits||[]).slice(0,6);
-  } catch(e){}
 
   app.innerHTML = `
     <div class="hero">
       <h1>WerticMods</h1>
-      <p>Твоя локальная платформа модов, сборок, плагинов и карт.
+      <p>Локальная платформа модов, сборок, плагинов и карт.
       Ставь контент прямо в .minecraft, публикуй своё, следи за обновлениями Modrinth.</p>
       <div class="cta">
         <button class="primary" onclick="go('mods')">Изучить моды</button>
@@ -532,20 +568,44 @@ async function renderHome(){
         <div class="hero-stat"><b>1 клик</b><span>Установка</span></div>
       </div>
     </div>
-
-    ${featured.length?`
-      <h3 class="section-title">Свежие публикации сообщества</h3>
-      <div class="grid">${featured.map(r=>resCard(r)).join('')}</div>
-    `:`
-      <h3 class="section-title">Свежих публикаций пока нет</h3>
-      <div class="muted">${ME?'Опубликуй первый ресурс!':'Войди, чтобы публиковать.'}</div>
-    `}
-
-    ${mrTrending.length?`
-      <h3 class="section-title" style="margin-top:30px">Тренды Modrinth ${CURRENT_VERSION?'· '+CURRENT_VERSION:''}</h3>
-      <div class="grid">${mrTrending.map(h=>mrCard(h)).join('')}</div>
-    `:''}
+    <div id="home-featured"></div>
+    <div id="home-trending"></div>
   `;
+
+  // Публикации сообщества — независимо
+  try{
+    const j = await api('/api/resources?q=');
+    const featured = (j.resources||[]).slice(0,6);
+    const el = document.getElementById('home-featured');
+    if(el) el.innerHTML = featured.length
+      ? `<h3 class="section-title">Свежие публикации сообщества</h3>
+         <div class="grid">${featured.map(r=>resCard(r)).join('')}</div>`
+      : `<h3 class="section-title">Публикаций пока нет</h3>
+         <div class="muted">${ME?'Опубликуй первый ресурс!':'Войди, чтобы публиковать.'}</div>`;
+  }catch(e){
+    const el = document.getElementById('home-featured');
+    if(el) el.innerHTML = '<div class="muted">Не удалось загрузить публикации: '+esc(e.message)+'</div>';
+  }
+
+  // Modrinth — независимо
+  try{
+    let url = '/api/modrinth/search?q=&type=mod';
+    if(CURRENT_VERSION) url += '&version='+encodeURIComponent(CURRENT_VERSION);
+    const j = await api(url);
+    const hits = (j.hits||[]).slice(0,6);
+    const el = document.getElementById('home-trending');
+    if(el) el.innerHTML = hits.length
+      ? `<h3 class="section-title" style="margin-top:30px">Тренды Modrinth ${CURRENT_VERSION?'· '+CURRENT_VERSION:''}</h3>
+         <div class="grid">${hits.map(h=>mrCard(h)).join('')}</div>`
+      : `<h3 class="section-title" style="margin-top:30px">Modrinth</h3>
+         <div class="muted">Modrinth не вернул результатов.</div>`;
+  }catch(e){
+    const el = document.getElementById('home-trending');
+    if(el) el.innerHTML =
+      `<h3 class="section-title" style="margin-top:30px">Modrinth</h3>
+       <div class="muted">Не удалось получить данные: ${esc(e.message)}</div>
+       <div class="muted" style="margin-top:6px">Возможные причины: провайдер блокирует Modrinth, нет VPN, или Modrinth временно лежит.</div>`;
+  }
 }
 
 function mrCard(h){
@@ -620,7 +680,7 @@ async function renderResource(){
     const isOwner = ME && (ME.id===r.author_id || ME.is_admin);
     app.innerHTML=`
       <div class="toolbar">
-        <button class="ghost" onclick="history.length?history.back():go('home')">← Назад</button>
+        <button class="ghost" onclick="go('home')">← Назад</button>
         ${isOwner?`<button onclick='openRes(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Редактировать</button>`:''}
         ${isOwner?`<button class="danger" onclick="delRes(${r.id}).then(()=>go('home'))">Удалить</button>`:''}
       </div>
@@ -734,7 +794,9 @@ async function renderMrSection(tab){
     const j = await api(url);
     mrRender(j.hits || [], mrType);
   } catch(e) {
-    document.getElementById('mrGrid').innerHTML = '<div class="muted">Ошибка Modrinth: '+esc(e.message)+'</div>';
+    const g = document.getElementById('mrGrid');
+    if(g) g.innerHTML = `<div class="muted">Modrinth недоступен: ${esc(e.message)}</div>
+      <div class="muted" style="margin-top:4px">Если провайдер блокирует — включи VPN.</div>`;
   }
 }
 
@@ -820,16 +882,28 @@ async function mrInstall(pid, rtype){
 // ================== MINE ==================
 async function renderMine(){
   const app=$('#app');
-  if(!ME){ go('home'); return; }
-  const j = await api('/api/resources?author='+encodeURIComponent(ME.nick));
-  const mine = j.resources || [];
-  app.innerHTML=`
-    <div class="toolbar">
-      <h2 style="margin:0">Мои публикации</h2>
-      <button class="primary" onclick="openRes()">+ Новый ресурс</button>
-    </div>
-    <div class="grid">${mine.length?mine.map(r=>resCard(r,true)).join(''):'<div class="muted">Пока пусто. Опубликуй первый ресурс!</div>'}</div>
-  `;
+  if(!ME){
+    app.innerHTML=`
+      <div class="card" style="padding:32px;text-align:center">
+        <h2 style="margin-top:0">Нужен вход</h2>
+        <p class="muted">Войдите или зарегистрируйтесь, чтобы видеть свои публикации.</p>
+        <button class="primary" onclick="openAuth()">Войти</button>
+      </div>`;
+    return;
+  }
+  try{
+    const j = await api('/api/resources?author='+encodeURIComponent(ME.nick));
+    const mine = j.resources || [];
+    app.innerHTML=`
+      <div class="toolbar">
+        <h2 style="margin:0">Мои публикации</h2>
+        <button class="primary" onclick="openRes()">+ Новый ресурс</button>
+      </div>
+      <div class="grid">${mine.length?mine.map(r=>resCard(r,true)).join(''):'<div class="muted">Пока пусто. Опубликуй первый ресурс!</div>'}</div>
+    `;
+  }catch(e){
+    app.innerHTML='<div class="muted">Ошибка: '+esc(e.message)+'</div>';
+  }
 }
 
 // ================== SUPPORT ==================
@@ -914,13 +988,33 @@ async function render(){
 }
 
 // ================== INIT ==================
-(async()=>{
-  await checkServer();
-  await refreshMe();
-  if(!TAB) TAB='home';
-  render();
+function bootstrap(){
+  if(window.__wm_booted) return;
+  window.__wm_booted = true;
+  document.body.classList.add('in-app');
+
+  checkServer();
+  refreshMe().then(() => {
+    render();
+  }).catch(() => {
+    render();
+  });
   setInterval(checkServer, 10000);
-})();
+}
+
+if(window.pywebview && window.pywebview.api){
+  bootstrap();
+} else {
+  window.addEventListener('pywebviewready', bootstrap);
+  // fallback для обычного браузера — стартуем через 800 мс
+  setTimeout(() => {
+    if(!window.__wm_booted){
+      bootstrap();
+      // В браузере кнопки окна не нужны — убираем класс
+      document.body.classList.remove('in-app');
+    }
+  }, 800);
+}
 </script>
 </body>
 </html>
